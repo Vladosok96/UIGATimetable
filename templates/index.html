@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Простой календарь на JS</title>
+    <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 8px;
+        border-radius: 12px; /* Добавляем закругленные углы */
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    #calendar {
+        margin-top: 20px;
+    }
+
+    #current-month {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .calendar-block {
+        width: 400px;
+    }
+
+    #nav-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #prev-month, #next-month {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 8px;
+    }
+
+
+    </style>
+</head>
+<body>
+<h2 id="current-month"></h2>
+<div id="nav-buttons">
+    <button id="prev-month" onclick="prevMonth()">Пред. месяц</button>
+    <button id="next-month" onclick="nextMonth()">След. месяц</button>
+</div>
+<table id="calendar">
+    <thead>
+    <tr>
+        <th>Пн</th>
+        <th>Вт</th>
+        <th>Ср</th>
+        <th>Чт</th>
+        <th>Пт</th>
+        <th>Сб</th>
+        <th>Вс</th>
+    </tr>
+    </thead>
+    <tbody id="calendar-body"></tbody>
+</table>
+
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+</body>
+</html>
