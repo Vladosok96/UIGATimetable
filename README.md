@@ -1,3 +1,3 @@
 # UIGATimetable
 Запуск программы:
-<code>flask --app hello run</code>
+<code>flask --app main run</code>
