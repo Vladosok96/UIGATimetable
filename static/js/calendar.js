@@ -1,3 +1,11 @@
+// Список месяцев
+const months = [
+    "Январь", "Февраль", "Март",
+    "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь",
+    "Октябрь", "Ноябрь", "Декабрь"
+  ];
+
 // Получаем текущую дату
 const currentDate = new Date();
 
@@ -27,6 +35,19 @@ function createCalendarCells(year, month) {
     for (let j = 0; j < 7; j++) {
       const cell = document.createElement("td");
 
+      cell.day = dayCount;
+      cell.month = month;
+      cell.year = year;
+
+      cell.onclick = function() {
+        console.log(event.srcElement.day, event.srcElement.month, event.srcElement.year);
+        
+        let date_block = event.srcElement;
+        let date_string = date_block.day + "." + date_block.month + "." + date_block.year;
+
+        document.getElementById("schedule-date").innerHTML = date_string;
+      };
+
       if ((i === 0 && j < startDay) || dayCount > totalDays) {
         // Пустые ячейки до начала месяца и после его окончания
         cell.textContent = "";
@@ -48,12 +69,6 @@ function createCalendarCells(year, month) {
 
 // Функция для обновления заголовка с текущим месяцем
 function updateCalendarHeader(year, month) {
-  const months = [
-    "Январь", "Февраль", "Март",
-    "Апрель", "Май", "Июнь",
-    "Июль", "Август", "Сентябрь",
-    "Октябрь", "Ноябрь", "Декабрь"
-  ];
   const currentMonthElement = document.getElementById("current-month");
   currentMonthElement.textContent = `${months[month]} ${year}`;
 }
