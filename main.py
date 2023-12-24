@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -39,9 +39,20 @@ class Day(db.Model):
 
 @app.route("/")
 def index():
-    # db.create_all()
+    db.create_all()
 
-    company = Company(name='Жмых аирлейнс', document_id='696966969696969966')
-    db.session.add(company)
-    db.session.commit()
     return render_template('index.html')
+
+
+@app.route("/dates")
+def month():
+    date_begin = request.args['date_begin']
+    date_end = request.args['date_end']
+
+    print(date_begin)
+    print(date_end)
+
+    days = Day.query.filter(Day.data <= date_end).filter(Day.data >= date_begin)
+    print(days)
+
+    return "ok"
