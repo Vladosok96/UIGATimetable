@@ -1,6 +1,7 @@
+import datetime
+
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
-
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///timetable.db'
@@ -32,7 +33,7 @@ class Day(db.Model):
     __tablename__ = 'days'
 
     id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.Date, nullable=False)
+    date = db.Column(db.Date, nullable=False)
     vocation = db.Column(db.Boolean, nullable=False)
     busy = db.relationship('Busy', backref='day', lazy=True)
 
@@ -44,15 +45,25 @@ def index():
     return render_template('index.html')
 
 
-@app.route("/dates")
+@app.route("/month/")
 def month():
-    date_begin = request.args['date_begin']
-    date_end = request.args['date_end']
+    month_value = int(request.args['month'])
+    year_value = int(request.args['year'])
 
-    print(date_begin)
-    print(date_end)
+    days = Day.query.filter(Day.date.between(f'{year_value}-{month_value}-01',
+                                             f'{year_value}-{month_value}-31')).all()
 
-    days = Day.query.filter(Day.data <= date_end).filter(Day.data >= date_begin)
-    print(days)
+    if len(days) == 0:
+        for i in range(1, 32):
+            try:
+                date = datetime.date(year_value, month_value, i)
+                new_day = Day(date=date, vocation=False)
+                db.session.add(new_day)
+            except:
+                break
+        db.session.commit()
 
-    return "ok"
+    for day in days:
+        print(day.date)
+
+    return 'ok'
