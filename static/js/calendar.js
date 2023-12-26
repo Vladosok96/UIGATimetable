@@ -27,44 +27,54 @@ function createCalendarCells(year, month) {
   const calendarBody = document.getElementById("calendar-body");
   calendarBody.innerHTML = ""; // Очищаем предыдущий месяц
 
-  let dayCount = 1;
+  $.ajax({
+    url: '/month',
+    method: 'get',
+    dataType: 'json',
+    data: {'month': month + 1, 'year': year},
+    success: function(data) {
+      let dayCount = 1;
 
-  for (let i = 0; i < 6; i++) {
-    const row = document.createElement("tr");
+      for (let i = 0; i < 6; i++) {
+        const row = document.createElement("tr");
 
-    for (let j = 0; j < 7; j++) {
-      const cell = document.createElement("td");
+        for (let j = 0; j < 7; j++) {
+          const cell = document.createElement("td");
 
-      cell.day = dayCount;
-      cell.month = month;
-      cell.year = year;
+          if ((i === 0 && j < startDay) || dayCount > totalDays) {
+            // Пустые ячейки до начала месяца и после его окончания
+            cell.textContent = "";
+          } else {
+            cell.day = dayCount;
+            cell.month = month;
+            cell.year = year;
+            cell.data = data[dayCount];
 
-      cell.onclick = function() {
-        console.log(event.srcElement.day, event.srcElement.month, event.srcElement.year);
-        
-        let date_block = event.srcElement;
-        let date_string = date_block.day + "." + date_block.month + "." + date_block.year;
+            cell.onclick = function() {
+              let date_block = event.srcElement;
+              let date_string = date_block.day + "." + date_block.month + "." + date_block.year;
+              date_string += '<br>';
+              date_string += date_block.data;
+              console.log(date_block.data)
 
-        document.getElementById("schedule-date").innerHTML = date_string;
-      };
+              document.getElementById("schedule-date").innerHTML = date_string;
+            };
 
-      if ((i === 0 && j < startDay) || dayCount > totalDays) {
-        // Пустые ячейки до начала месяца и после его окончания
-        cell.textContent = "";
-      } else {
-        cell.textContent = dayCount;
-        dayCount++;
+            cell.textContent = dayCount;
+            dayCount++;
+          }
+
+          row.appendChild(cell);
+        }
+
+        calendarBody.appendChild(row);
+
+        if (dayCount > totalDays) {
+          break;
+        }
       }
-
-      row.appendChild(cell);
     }
-
-    calendarBody.appendChild(row);
-
-    if (dayCount > totalDays) {
-      break;
-    }
-  }
+  });
 }
 
 // Функция для обновления заголовка с текущим месяцем
