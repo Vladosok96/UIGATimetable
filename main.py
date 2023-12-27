@@ -27,6 +27,7 @@ class Busy(db.Model):
     end_time = db.Column(db.Time, nullable=False)
     day_id = db.Column(db.Integer, db.ForeignKey('days.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
+    simulator_id = db.Column(db.Integer, db.ForeignKey('flight_simulators.id'))
 
 
 class Day(db.Model):
@@ -36,6 +37,16 @@ class Day(db.Model):
     date = db.Column(db.Date, nullable=False)
     vocation = db.Column(db.Boolean, nullable=False)
     busy = db.relationship('Busy', backref='day', lazy=True)
+
+
+class FlightSimulator(db.Model):
+    __tablename__ = 'flight_simulators'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    caption = db.Column(db.String(1024), nullable=False)
+    auditory = db.Column(db.String(100), nullable=False)
+    busy = db.relationship('Busy', backref='flight_simulator', lazy=True)
 
 
 @app.route("/")
