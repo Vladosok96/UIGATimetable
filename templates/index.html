@@ -14,7 +14,6 @@
         border: 1px solid #dddddd;
         text-align: center;
         padding: 8px;
-        border-radius: 12px; /* Добавляем закругленные углы */
     }
 
     th {
@@ -51,7 +50,6 @@
         font-size: 16px;
         margin: 4px 2px;
         cursor: pointer;
-        border-radius: 8px;
     }
 
     .container {
@@ -84,8 +82,21 @@
             </thead>
             <tbody id="calendar-body"></tbody>
         </table>
-        <div id="schedule-block">
+        <div id="schedule-block" hidden>
             <p>Расписание на <span id="schedule-date"></span>:</p>
+            <div id="schedule-table-block">
+                <table id="schedule-table">
+                    <thead>
+                    <tr>
+                        <th>№</th>
+                        <th>Начало</th>
+                        <th>Конец</th>
+                        <th>Название компании</th>
+                    </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
