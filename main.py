@@ -44,22 +44,48 @@ class FlightSimulator(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    english_name = db.Column(db.String(100), nullable=False)
     caption = db.Column(db.String(1024), nullable=False)
     auditory = db.Column(db.String(100), nullable=False)
     busy = db.relationship('Busy', backref='flight_simulator', lazy=True)
 
 
-@app.route("/")
-def index():
+@app.route("/get_simulators_list/")
+def get_simulators_list():
+    simulators = FlightSimulator.query.all()
+
+    response = {}
+    for simulator in simulators:
+        simulator_dict = {
+            'id': simulator.id,
+            'name': simulator.name,
+            'english_name': simulator.english_name,
+            'caption': simulator.caption,
+            'auditory': simulator.auditory
+        }
+        response[simulator.id] = simulator_dict
+
+    return response
+
+
+@app.route("/simulators_list/")
+def simulators_list():
     db.create_all()
 
-    return render_template('index.html')
+    return render_template('simulators_list.html')
+
+
+@app.route("/register_train/<simulator_id>")
+def register_train(simulator_id):
+    db.create_all()
+    return render_template('register_train.html', simulator_id=simulator_id)
 
 
 @app.route("/month/")
 def month():
     month_value = int(request.args['month'])
     year_value = int(request.args['year'])
+    simulator_id = int(request.args['simulator_id'])
 
     days = Day.query.filter(Day.date.between(f'{year_value}-{month_value:02}-01',
                                              f'{year_value}-{month_value:02}-31')).all()
@@ -85,7 +111,7 @@ def month():
             'date': day.date.strftime('%d.%m.%Y'),
             'vocation': day.vocation,
             'busies': {}}
-        busies = Busy.query.filter(Busy.day_id == day.id).all()
+        busies = Busy.query.filter(Busy.day_id == day.id).filter(Busy.simulator_id == simulator_id).all()
         for busy in busies:
             busy_dictionary = {
                 'company_name': Company.query.filter(Company.id == busy.company_id).first().name,
@@ -94,3 +120,6 @@ def month():
             day_dictionary['busies'][busy.id] = busy_dictionary
         response[day.date.day] = day_dictionary
     return response
+
+
+app.run()

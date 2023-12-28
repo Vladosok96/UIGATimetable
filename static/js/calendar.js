@@ -28,10 +28,10 @@ function createCalendarCells(year, month) {
   calendarBody.innerHTML = ""; // Очищаем предыдущий месяц
 
   $.ajax({
-    url: '/month',
+    url: '/month/',
     method: 'get',
     dataType: 'json',
-    data: {'month': month + 1, 'year': year},
+    data: {'month': month + 1, 'year': year, 'simulator_id': simulator_id},
     success: function(data) {
       let dayCount = 1;
 
@@ -46,7 +46,7 @@ function createCalendarCells(year, month) {
             cell.textContent = "";
           } else {
             cell.day = dayCount;
-            cell.month = month;
+            cell.month = month + 1;
             cell.year = year;
             cell.data = data[dayCount];
 
@@ -62,17 +62,18 @@ function createCalendarCells(year, month) {
                 schedule_body.removeChild(schedule_body.lastElementChild);
               }
 
-              let data = date_block.data
-              for (let i = 1; i <= Object.keys(data.busies).length; i++) {
+              let busies = date_block.data.busies;
+              for (let i = 0; i < Object.keys(busies).length; i++) {
+                let busy = busies[Object.keys(busies)[i]];
                 busy_row = document.createElement("tr");
                 cell_n = document.createElement("td");
                 cell_from = document.createElement("td");
                 cell_to = document.createElement("td");
                 cell_name = document.createElement("td");
-                cell_n.textContent = i;
-                cell_from.textContent = data.busies[i].start_time;
-                cell_to.textContent = data.busies[i].end_time;
-                cell_name.textContent = data.busies[i].company_name;
+                cell_n.textContent = i + 1;
+                cell_from.textContent = busy.start_time;
+                cell_to.textContent = busy.end_time;
+                cell_name.textContent = busy.company_name;
                 busy_row.appendChild(cell_n);
                 busy_row.appendChild(cell_from);
                 busy_row.appendChild(cell_to);
