@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Список тренажеров</title>
+    <style>
+        .container {
+            width: 800px;
+            display: flex;
+            flex-direction: column;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Список тренажеров</h2>
+        <ul id="simulators-ulist"></ul>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/simulators_list.js') }}"></script>
+</body>
+</html>

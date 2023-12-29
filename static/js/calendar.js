@@ -45,41 +45,44 @@ function createCalendarCells(year, month) {
             // Пустые ячейки до начала месяца и после его окончания
             cell.textContent = "";
           } else {
-            cell.day = dayCount;
-            cell.month = month + 1;
-            cell.year = year;
-            cell.data = data[dayCount];
+            cell.date = dayCount + "." + (month + 1) + "." + year;
 
             cell.onclick = function() {
               let date_block = event.srcElement;
-              let date_string = date_block.day + "." + date_block.month + "." + date_block.year;
 
               document.getElementById("schedule-block").removeAttribute('hidden');
-              document.getElementById("schedule-date").innerHTML = date_string;
+              document.getElementById("schedule-date").innerHTML = date_block.date;
 
-              let schedule_body = document.getElementById("schedule-body");
-              while (schedule_body.lastElementChild) {
-                schedule_body.removeChild(schedule_body.lastElementChild);
-              }
+              $.ajax({
+                url: '/day/',
+                method: 'get',
+                dataType: 'json',
+                data: {'day': date_block.date, 'simulator_id': simulator_id},
+                success: function(data) {
+                  let schedule_body = document.getElementById("schedule-body");
+                  while (schedule_body.lastElementChild) {
+                    schedule_body.removeChild(schedule_body.lastElementChild);
+                  }
 
-              let busies = date_block.data.busies;
-              for (let i = 0; i < Object.keys(busies).length; i++) {
-                let busy = busies[Object.keys(busies)[i]];
-                busy_row = document.createElement("tr");
-                cell_n = document.createElement("td");
-                cell_from = document.createElement("td");
-                cell_to = document.createElement("td");
-                cell_name = document.createElement("td");
-                cell_n.textContent = i + 1;
-                cell_from.textContent = busy.start_time;
-                cell_to.textContent = busy.end_time;
-                cell_name.textContent = busy.company_name;
-                busy_row.appendChild(cell_n);
-                busy_row.appendChild(cell_from);
-                busy_row.appendChild(cell_to);
-                busy_row.appendChild(cell_name);
-                schedule_body.appendChild(busy_row);
-              }
+                  for (let i = 0; i < Object.keys(data).length; i++) {
+                    let busy = data[Object.keys(data)[i]];
+                    busy_row = document.createElement("tr");
+                    cell_n = document.createElement("td");
+                    cell_from = document.createElement("td");
+                    cell_to = document.createElement("td");
+                    cell_name = document.createElement("td");
+                    cell_n.textContent = i + 1;
+                    cell_from.textContent = busy.start_time;
+                    cell_to.textContent = busy.end_time;
+                    cell_name.textContent = busy.company_name;
+                    busy_row.appendChild(cell_n);
+                    busy_row.appendChild(cell_from);
+                    busy_row.appendChild(cell_to);
+                    busy_row.appendChild(cell_name);
+                    schedule_body.appendChild(busy_row);
+                  }
+                }
+              });
             };
 
             cell.textContent = dayCount;
