@@ -9,6 +9,10 @@ const months = [
 // Получаем текущую дату
 const currentDate = new Date();
 
+// Переменные для расписания
+var checked_count = 0;
+var selected_day = '';
+
 // Функция для получения дней в месяце
 function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
@@ -50,6 +54,8 @@ function createCalendarCells(year, month) {
             cell.onclick = function() {
               let date_block = event.srcElement;
 
+              selected_day = cell.date;
+
               document.getElementById("schedule-block").removeAttribute('hidden');
               document.getElementById("schedule-date").innerHTML = date_block.date;
 
@@ -75,10 +81,43 @@ function createCalendarCells(year, month) {
                     cell_from.textContent = busy.start_time;
                     cell_to.textContent = busy.end_time;
                     cell_name.textContent = busy.company_name;
+
+                    if (busy.approved == 0) {
+                      cell_name.textContent += ' (на рассмотрении)';
+                    }
+
                     busy_row.appendChild(cell_n);
                     busy_row.appendChild(cell_from);
                     busy_row.appendChild(cell_to);
                     busy_row.appendChild(cell_name);
+
+                    cell_input = document.createElement("td");
+                    checkbox_block = document.createElement("input");
+                    checkbox_block.setAttribute('type', 'checkbox');
+                    checkbox_block.setAttribute('name', busy.id);
+                    if (busy.company_name != "") {
+                      checkbox_block.setAttribute('disabled', 'disabled');
+                    }
+
+                    checkbox_block.onchange = function(data) {
+                      if (data.srcElement.checked) {
+                        checked_count++;
+                      }
+                      else {
+                        checked_count--;
+                      }
+
+                      if (checked_count > 0) {
+                        document.getElementById("schedule_form_block").removeAttribute('hidden');
+                      }
+                      else {
+                        document.getElementById("schedule_form_block").setAttribute('hidden', 'hidden');
+                      }
+                    }
+
+                    cell_input.appendChild(checkbox_block);
+                    busy_row.appendChild(cell_input);
+
                     schedule_body.appendChild(busy_row);
                   }
                 }
@@ -139,3 +178,93 @@ function updateCalendar() {
 
 // Вызываем инициализацию календаря
 initCalendar();
+
+// Отправка запроса на запись в расписание
+let schedule_form = document.getElementById("schedule-form");
+
+schedule_form.addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  let values = e.srcElement;
+  let ids = {};
+
+  for (let i = 0; i < 5; i++) {
+    if (values[i].checked) {
+      ids[values[i].name] = 'on';
+    }
+  }
+
+  await $.ajax({
+    url: '/send_busies_list',
+    method: 'get',
+    dataType: 'json',
+    data: ids,
+    success: function(data) {
+      document.getElementById("schedule-response").textContent = data.response;
+    }
+  });
+
+  $.ajax({
+    url: '/day/',
+    method: 'get',
+    dataType: 'json',
+    data: {'day': selected_day, 'simulator_id': simulator_id},
+    success: function(data) {
+      let schedule_body = document.getElementById("schedule-body");
+      while (schedule_body.lastElementChild) {
+        schedule_body.removeChild(schedule_body.lastElementChild);
+      }
+
+      for (let i = 0; i < Object.keys(data).length; i++) {
+        let busy = data[Object.keys(data)[i]];
+        busy_row = document.createElement("tr");
+        cell_n = document.createElement("td");
+        cell_from = document.createElement("td");
+        cell_to = document.createElement("td");
+        cell_name = document.createElement("td");
+        cell_n.textContent = i + 1;
+        cell_from.textContent = busy.start_time;
+        cell_to.textContent = busy.end_time;
+        cell_name.textContent = busy.company_name;
+
+        if (busy.approved == 0) {
+          cell_name.textContent += ' (на рассмотрении)';
+        }
+
+        busy_row.appendChild(cell_n);
+        busy_row.appendChild(cell_from);
+        busy_row.appendChild(cell_to);
+        busy_row.appendChild(cell_name);
+
+        cell_input = document.createElement("td");
+        checkbox_block = document.createElement("input");
+        checkbox_block.setAttribute('type', 'checkbox');
+        checkbox_block.setAttribute('name', busy.id);
+        if (busy.company_name != "") {
+          checkbox_block.setAttribute('disabled', 'disabled');
+        }
+
+        checkbox_block.onchange = function(data) {
+          if (data.srcElement.checked) {
+            checked_count++;
+          }
+          else {
+            checked_count--;
+          }
+
+          if (checked_count > 0) {
+            document.getElementById("schedule_form_block").removeAttribute('hidden');
+          }
+          else {
+            document.getElementById("schedule_form_block").setAttribute('hidden', 'hidden');
+          }
+        }
+
+        cell_input.appendChild(checkbox_block);
+        busy_row.appendChild(cell_input);
+
+        schedule_body.appendChild(busy_row);
+      }
+    }
+  });
+});

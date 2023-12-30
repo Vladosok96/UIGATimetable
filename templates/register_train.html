@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Простой календарь на JS</title>
-    <style>
+{% extends "base.html" %}
+{% block title %}Регистация тренировки{% endblock %}
+
+{% block head %}
+<style>
     table {
         border-collapse: collapse;
         width: 100%;
@@ -53,38 +51,41 @@
     }
 
     .container {
-        width: 800px;
+        width: 1000px;
         display: flex;
         flex-direction: column;
+        align-items: stretch;
         margin: 0 auto;
     }
+</style>
+{% endblock %}
 
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2 id="current-month"></h2>
-        <div id="nav-buttons">
-            <button id="prev-month" onclick="prevMonth()">Пред. месяц</button>
-            <button id="next-month" onclick="nextMonth()">След. месяц</button>
-        </div>
-        <table id="calendar">
-            <thead>
-            <tr>
-                <th>Пн</th>
-                <th>Вт</th>
-                <th>Ср</th>
-                <th>Чт</th>
-                <th>Пт</th>
-                <th>Сб</th>
-                <th>Вс</th>
-            </tr>
-            </thead>
-            <tbody id="calendar-body"></tbody>
-        </table>
-        <div id="schedule-block" hidden>
-            <p>Расписание на <span id="schedule-date"></span>:</p>
-            <div id="schedule-table-block">
+{% block content %}
+<div class="container">
+    <a href="/simulators_list"><- к списку тренажеров</a>
+    <h2>Регистрация для тренажера {{ simulator_name }} на <span id="current-month"></span></h2>
+    <div id="nav-buttons">
+        <button id="prev-month" onclick="prevMonth()">Пред. месяц</button>
+        <button id="next-month" onclick="nextMonth()">След. месяц</button>
+    </div>
+    <table id="calendar">
+        <thead>
+        <tr>
+            <th>Пн</th>
+            <th>Вт</th>
+            <th>Ср</th>
+            <th>Чт</th>
+            <th>Пт</th>
+            <th>Сб</th>
+            <th>Вс</th>
+        </tr>
+        </thead>
+        <tbody id="calendar-body"></tbody>
+    </table>
+    <div id="schedule-block" hidden>
+        <p>Расписание полетов на <span id="schedule-date"></span>:</p>
+        <div id="schedule-table-block">
+            <form action="" id="schedule-form">
                 <table id="schedule-table">
                     <thead>
                     <tr>
@@ -92,19 +93,24 @@
                         <th>Начало</th>
                         <th>Конец</th>
                         <th>Название компании</th>
+                        <th>Выбор</th>
                     </tr>
                     </thead>
                     <tbody id="schedule-body"></tbody>
                 </table>
-            </div>
+                <div id="schedule_form_block" hidden="hidden">
+                    <input type="submit" value="Отправить заявку">
+                    <p id="schedule-response"></p>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <script>
-        var simulator_id='{{simulator_id}}';
-    </script>
+<script>
+    var simulator_id='{{simulator_id}}';
+</script>
 
-    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
-</body>
-</html>
+<script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/calendar.js') }}"></script>
+{% endblock %}

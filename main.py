@@ -30,6 +30,7 @@ class Busy(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
+    approved = db.Column(db.Integer, nullable=False)
     day_id = db.Column(db.Integer, db.ForeignKey('days.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
     simulator_id = db.Column(db.Integer, db.ForeignKey('flight_simulators.id'))
@@ -124,7 +125,38 @@ def simulators_list():
 @app.route("/register_train/<simulator_id>")
 def register_train(simulator_id):
     db.create_all()
-    return render_template('register_train.html', simulator_id=simulator_id)
+
+    simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
+
+    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name)
+
+
+@app.route("/send_busies_list/")
+def send_busies_list():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    ids = request.args
+    busies_id = []
+    for checkbox in ids:
+        if ids[checkbox] == 'on':
+            try:
+                busy_id = int(checkbox)
+                busies_id.append(busy_id)
+            except:
+                pass
+
+    for busy_id in busies_id:
+        busy = Busy.query.filter(Busy.id == busy_id).first()
+
+        if busy.company_id != None:
+            return {'error': True, 'response': 'Выбранные слоты уже заняты'}
+
+        busy.company_id = session.get('id')
+        busy.approved = 0
+    db.session.commit()
+
+    return {'error': False, 'response': 'Запрос отправлен'}
 
 
 @app.route("/month/")
@@ -180,7 +212,8 @@ def day():
             new_busy = Busy(start_time=slot[0],
                             end_time=slot[1],
                             day_id=day_id,
-                            simulator_id=simulator_id)
+                            simulator_id=simulator_id,
+                            approved=1)
             db.session.add(new_busy)
         db.session.commit()
 
@@ -198,7 +231,8 @@ def day():
             'end_time': busy.end_time.strftime('%H:%M:%S'),
             'day_id': busy.day_id,
             'company_name': company_name,
-            'simulator_id': busy.simulator_id
+            'simulator_id': busy.simulator_id,
+            'approved': busy.approved
         }
         response[busy.id] = busy_dictionary
 
