@@ -15,6 +15,9 @@
 </head>
 <body>
     <div class="container">
+        {% if is_admin == True %}
+        <a href="/admin_panel">Перейти в средство администрирования</a>
+        {% endif %}
         <h2>Список тренажеров</h2>
         <ul id="simulators-ulist"></ul>
     </div>

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Панель администрирования{% endblock %}
+
+{% block head %}
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    #calendar {
+        margin-top: 20px;
+    }
+
+    #current-month {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .calendar-block {
+        width: 400px;
+    }
+
+    #nav-buttons {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #prev-month, #next-month {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+
+    .container {
+        width: 1000px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0 auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="/simulators_list"><- к списку тренажеров</a>
+    <h2>Заявки на регистрацию тренировки</h2>
+    <div id="schedule-block">
+        <div id="schedule-table-block">
+            <table id="schedule-table">
+                <thead>
+                    <tr>
+                        <th>День</th>
+                        <th>Начало</th>
+                        <th>Конец</th>
+                        <th>Название компании</th>
+                        <th>Название тренажера</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="schedule-body"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    var simulator_id='{{simulator_id}}';
+</script>
+
+<script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/admin_panel.js') }}"></script>
+{% endblock %}

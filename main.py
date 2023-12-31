@@ -91,7 +91,7 @@ def auth():
 @app.route('/logout/')
 def logout():
     session.pop('id', None)
-    return redirect('/login')
+    return redirect('/auth')
 
 
 @app.route("/get_simulators_list/")
@@ -119,7 +119,74 @@ def simulators_list():
     if session.get('id') == None:
         return redirect('/auth', 301)
 
-    return render_template('simulators_list.html')
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    is_admin = False
+    if user.admin > 0:
+        is_admin = True
+
+    return render_template('simulators_list.html', is_admin=is_admin)
+
+
+@app.route("/send_approve/")
+def send_approve():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+
+    busy_id = request.args.get('id')
+    approved = int(request.args.get('approved'))
+
+    busy = Busy.query.filter(Busy.id == busy_id).first()
+    if approved == 1:
+        busy.approved = 1
+    else:
+        busy.company_id = None
+        busy.approved = 1
+
+    db.session.commit()
+
+    return {'error': False, 'response': 'Изменения сохранены'}
+
+
+@app.route("/get_approval/")
+def get_approval():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+
+    busies = Busy.query.filter(Busy.approved == 0).all()
+
+    response = {}
+    for busy in busies:
+        company_name = ""
+        if busy.company_id != None:
+            company_name = Company.query.filter(Company.id == busy.company_id).first().name
+
+        busy_day = Day.query.filter(Day.id == busy.day_id).first().date
+        simulator_name = FlightSimulator.query.filter(FlightSimulator.id == busy.simulator_id).first().name
+
+        busy_dictionary = {
+            'id': busy.id,
+            'start_time': busy.start_time.strftime('%H:%M:%S'),
+            'end_time': busy.end_time.strftime('%H:%M:%S'),
+            'day': busy_day.strftime('%d.%m.%Y'),
+            'company_name': company_name,
+            'simulator_name': simulator_name
+        }
+        response[busy.id] = busy_dictionary
+
+    return response
+
+
+@app.route("/admin_panel/")
+def admin_panel():
+    return render_template('admin_panel.html')
 
 
 @app.route("/register_train/<simulator_id>")
@@ -135,6 +202,10 @@ def register_train(simulator_id):
 def send_busies_list():
     if session.get('id') == None:
         return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin > 0:
+        return {'error': True, 'response': 'Администратор не может зарегистрировать полет на себя'}
 
     ids = request.args
     busies_id = []
