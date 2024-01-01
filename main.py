@@ -21,6 +21,7 @@ class Company(db.Model):
     document_id_hash = db.Column(db.String(200), nullable=False)
     mail = db.Column(db.String(100), nullable=False)
     admin = db.Column(db.Integer, nullable=False)
+    approved = db.Column(db.Integer, nullable=False)
     busy = db.relationship('Busy', backref='company', lazy=True)
 
 
@@ -63,9 +64,21 @@ def index():
     return redirect('/simulators_list', 301)
 
 
-@app.route("/register/")
-def register():
-    return ''
+@app.route("/register_user/", methods=['GET', 'POST'])
+def user_registration():
+    if session.get('id') != None:
+        return redirect('/simulators_list', 301)
+
+    message = ''
+    if request.method == 'POST' and request.form.get('login'):
+        login = request.form.get('login')
+        password = request.form.get('password')
+
+        user = Company.query.filter(Company.login == login).first()
+        if user:
+            message = "Компания с таким логином уже зарегистрирована или ожидает подтверждения!"
+
+    return render_template('register_user.html', message=message)
 
 
 @app.route("/auth/", methods=['GET', 'POST'])

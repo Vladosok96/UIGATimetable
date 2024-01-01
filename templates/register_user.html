@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Отправка заявки на регистрацию{% endblock %}
+{% block content %}
+    <div class="container">
+
+        <form method="post" action="/register_user">
+            <p>
+                <label>Название компании</label>
+                <input type="password" name="company_name">
+            </p>
+            <p>
+                <label>Логин</label>
+                <input type="text" name="login">
+            </p>
+            <p>
+                <label>Пароль (номер договора)</label>
+                <input type="password" name="password">
+            </p>
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
+            <p>
+                <input type="submit" value="Отправить"> или, если уже есть аккаунт <a href="/registration">войти</a>
+            </p>
+        </form>
+    </div>
+{% endblock %}
