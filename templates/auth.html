@@ -2,10 +2,7 @@
 {% block title %}Авторизация{% endblock %}
 {% block content %}
     <div class="container">
-        {% if message %}
-            <p>{{ message }}</p>
-        {% endif %}
-
+        
         <form method="post" action="/auth">
             <p>
                 <label>Логин</label>
@@ -15,6 +12,9 @@
                 <label>Пароль (номер договора)</label>
                 <input type="password" name="password">
             </p>
+            {% if message %}
+                <p>{{ message }}</p>
+            {% endif %}
             <p>
                 <input type="submit" value="Войти"> или <a href="/register_user">Отправить заявку</a>
             </p>

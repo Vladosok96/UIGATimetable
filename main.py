@@ -61,6 +61,9 @@ class FlightSimulator(db.Model):
 def index():
     if session.get('id') == None:
         return redirect('/auth', 301)
+    
+    db.create_all()
+
     return redirect('/simulators_list', 301)
 
 
@@ -73,10 +76,23 @@ def user_registration():
     if request.method == 'POST' and request.form.get('login'):
         login = request.form.get('login')
         password = request.form.get('password')
+        company_name = request.form.get('company_name')
+        mail = request.form.get('mail')
 
         user = Company.query.filter(Company.login == login).first()
         if user:
             message = "Компания с таким логином уже зарегистрирована или ожидает подтверждения!"
+        else:
+            new_user = Company(name=company_name, login=login, document_id_hash=password, mail=mail, admin=0, approved=0)
+            message = 'Заявка отправлена'
+
+            if len(Company.query.all()) == 0:
+                new_user.admin = 1
+                new_user.approved = 1
+                message = 'Зарегистрирован аккаунт администратора'
+            
+            db.session.add(new_user)
+            db.session.commit()
 
     return render_template('register_user.html', message=message)
 
@@ -86,17 +102,21 @@ def auth():
     if session.get('id') != None:
         return redirect('/simulators_list', 301)
 
+    db.create_all()
+
     message = ''
     if request.method == 'POST' and request.form.get('login'):
         login = request.form.get('login')
         password = request.form.get('password')
 
-        user = Company.query.filter(Company.document_id_hash == password and Company.login == login).first()
-        if user:
+        user = Company.query.filter(Company.document_id_hash == password).filter(Company.login == login).first()
+        if user and user.approved == 0:
+            message = 'Аккаунт ожидает подтверждения!'
+        elif user:
             session['id'] = user.id
             return redirect('/simulators_list', 301)
         else:
-            message = "Неверный логин или пароль!"
+            message = 'Неверный логин или пароль!'
 
     return render_template('auth.html', message=message)
 
@@ -193,6 +213,55 @@ def get_approval():
             'simulator_name': simulator_name
         }
         response[busy.id] = busy_dictionary
+
+    return response
+
+
+@app.route("/send_user_approve/")
+def send_user_approve():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+
+    user_id = request.args.get('id')
+    approved = int(request.args.get('approved'))
+
+    user = Company.query.filter(Company.id == user_id).first()
+    if approved == 1:
+        user.approved = 1
+    else:
+        db.session.delete(user)
+
+    db.session.commit()
+
+    return {'error': False, 'response': 'Изменения сохранены'}
+
+
+@app.route("/get_user_approval/")
+def get_user_approval():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+
+    users = Company.query.all()
+
+    response = {}
+    for user in users:
+        user_dictionary = {
+            'id': user.id,
+            'login': user.login,
+            'mail': user.mail,
+            'document_id_hash': user.document_id_hash,
+            'name': user.name,
+            'approved': user.approved
+        }
+        response[user.id] = user_dictionary
 
     return response
 

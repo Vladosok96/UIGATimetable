@@ -19,6 +19,7 @@ function update_schedule() {
         cell_company_name = document.createElement('td');
         cell_simulator_name = document.createElement('td');
         cell_action = document.createElement('td');
+
         cell_day.textContent = busy.day;
         cell_from.textContent = busy.start_time;
         cell_to.textContent = busy.end_time;
@@ -73,4 +74,82 @@ function update_schedule() {
   });
 }
 
+function update_users() {
+  $.ajax({
+    url: '/get_user_approval',
+    method: 'get',
+    dataType: 'json',
+    data: {},
+    success: function(data) {
+      let users_body = document.getElementById('users-body');
+      while (users_body.lastElementChild) {
+        users_body.removeChild(users_body.lastElementChild);
+      }
+
+      for (let i = 0; i < Object.keys(data).length; i++) {
+        user = data[Object.keys(data)[i]];
+        user_row = document.createElement('tr');
+        cell_name = document.createElement('td');
+        cell_document_id = document.createElement('td');
+        cell_login = document.createElement('td');
+        cell_mail = document.createElement('td');
+        cell_action = document.createElement('td');
+        
+        cell_name.textContent = user.name;
+        cell_document_id.textContent = user.document_id_hash;
+        cell_login.textContent = user.login;
+        cell_mail.textContent = user.mail;
+
+        user_row.appendChild(cell_name);
+        user_row.appendChild(cell_document_id);
+        user_row.appendChild(cell_login);
+        user_row.appendChild(cell_mail);
+
+        if (user.approved == 0) {
+          action_approve = document.createElement('button');
+          action_decline = document.createElement('button');
+  
+          action_approve.textContent = '+';
+          action_approve.user_id = user.id;
+          action_approve.onclick = function(block) {
+            $.ajax({
+              url: '/send_user_approve',
+              method: 'get',
+              dataType: 'json',
+              data: {'id': block.srcElement.user_id, 'approved': 1},
+              success: function(data) {
+                update_users();
+              }
+            });
+          }
+  
+          action_decline.textContent = '-';
+          action_decline.user_id = user.id;
+          action_decline.onclick = function(block) {
+            $.ajax({
+              url: '/send_user_approve',
+              method: 'get',
+              dataType: 'json',
+              data: {'id': block.srcElement.user_id, 'approved': 0},
+              success: function(data) {
+                update_users();
+              }
+            });
+          }
+  
+          cell_action.appendChild(action_approve);
+          cell_action.appendChild(action_decline);
+        }
+
+        user_row.appendChild(cell_action);
+
+        users_body.appendChild(user_row);
+      }
+    }
+  });
+}
+
+update_users();
 update_schedule();
+
+

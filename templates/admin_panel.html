@@ -81,11 +81,41 @@
             </table>
         </div>
     </div>
+    <h2>Заявки на регистрацию компании</h2>
+    <div id="users-block">
+        <div id="users-table-block">
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>Название компании</th>
+                        <th>Номер договора</th>
+                        <th>Логин</th>
+                        <th>Почта</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="users-body"></tbody>
+            </table>
+        </div>
+    </div>
+    <h2>Заявки на регистрацию компании</h2>
+    <div id="simulators-block">
+        <div id="simulators-table-block">
+            <table id="simulators-table">
+                <thead>
+                    <tr>
+                        <th>Название компании</th>
+                        <th>Номер договора</th>
+                        <th>Логин</th>
+                        <th>Почта</th>
+                        <th>Действие</th>
+                    </tr>
+                </thead>
+                <tbody id="simulators-body"></tbody>
+            </table>
+        </div>
+    </div>
 </div>
-
-<script>
-    var simulator_id='{{simulator_id}}';
-</script>
 
 <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin_panel.js') }}"></script>
