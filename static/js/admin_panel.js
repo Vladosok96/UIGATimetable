@@ -149,7 +149,91 @@ function update_users() {
   });
 }
 
+
+function update_simulators() {
+  $.ajax({
+    url: '/get_simulators_list',
+    method: 'get',
+    dataType: 'json',
+    data: {},
+    success: function(data) {
+      let simulators_body = document.getElementById('simulators-body');
+      while (simulators_body.firstElementChild.id != 'simulators-form-row') {
+        simulators_body.removeChild(simulators_body.firstElementChild);
+      }
+
+      for (let i = 0; i < Object.keys(data).length; i++) {
+        simulator = data[Object.keys(data)[i]];
+        simulator_row = document.createElement('tr');
+        cell_name = document.createElement('td');
+        cell_english_name = document.createElement('td');
+        cell_caption = document.createElement('td');
+        cell_auditory = document.createElement('td');
+        cell_action = document.createElement('td');
+
+        cell_name.textContent = simulator.name;
+        cell_english_name.textContent = simulator.english_name;
+        cell_caption.textContent = simulator.caption;
+        cell_auditory.textContent = simulator.auditory;
+
+        simulator_row.appendChild(cell_name);
+        simulator_row.appendChild(cell_english_name);
+        simulator_row.appendChild(cell_caption);
+        simulator_row.appendChild(cell_auditory);
+
+        action_delete = document.createElement('button');
+
+        action_delete.textContent = '-';
+        action_delete.simulator_id = simulator.id;
+        action_delete.onclick = function(block) {
+          $.ajax({
+            url: '/send_simulator',
+            method: 'get',
+            dataType: 'json',
+            data: {'id': block.srcElement.simulator_id, 'action': 'delete'},
+            success: function(data) {
+              update_simulators();
+            }
+          });
+        }
+
+        cell_action.appendChild(action_delete);
+
+        simulator_row.appendChild(cell_action);
+
+        simulators_body.insertBefore(simulator_row, simulators_body.lastElementChild);
+      }
+    }
+  });
+}
+
+
 update_users();
 update_schedule();
+update_simulators();
 
 
+var simulators_form = document.getElementById("simulators-form");
+
+simulators_form.addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  values = e.srcElement;
+  name = values[0].value;
+  english_name = values[1].value;
+  caption = values[2].value;
+  auditory = values[3].value;
+
+  $.ajax({
+    url: '/send_simulator',
+    method: 'get',
+    dataType: 'json',
+    data: {'name': name, 'english_name': english_name, 'caption': caption, 'auditory': auditory, 'action': 'add'},
+    success: function(data) {
+      update_simulators();
+      if (data.error == true) {
+        alert(data.response)
+      }
+    }
+  });
+});

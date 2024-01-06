@@ -54,7 +54,13 @@ function createCalendarCells(year, month) {
             cell.onclick = function() {
               let date_block = event.srcElement;
 
-              selected_day = cell.date;
+              selected_day = date_block.date;
+
+              last_selected_day = document.getElementById('selected_day');
+              if (last_selected_day) {
+                last_selected_day.removeAttribute('id');
+              }
+              date_block.setAttribute('id', 'selected_day');
 
               document.getElementById("schedule-block").removeAttribute('hidden');
               document.getElementById("schedule-date").innerHTML = date_block.date;

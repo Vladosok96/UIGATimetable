@@ -127,6 +127,36 @@ def logout():
     return redirect('/auth')
 
 
+@app.route('/send_simulator/')
+def send_simulator():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+
+    action = request.args.get('action')
+
+    if action == 'add':
+        name = request.args.get('name')
+        english_name = request.args.get('english_name')
+        caption = request.args.get('caption')
+        auditory = request.args.get('auditory')
+
+        simulators_count = FlightSimulator.query.filter(FlightSimulator.name == name).count()
+        if simulators_count > 0:
+            return {'error': True, 'response': 'Тренажер с таким именем уже существует'}
+
+        new_simulator = FlightSimulator(name=name, english_name=english_name, caption=caption, auditory=auditory)
+        db.session.add(new_simulator)
+        db.session.commit()
+
+        return {'error': False, 'response': 'Успешно добавлено'}
+    elif action == 'delete':
+        return {'error': False, 'response': 'Успешно удалено'}
+
+
 @app.route("/get_simulators_list/")
 def get_simulators_list():
     simulators = FlightSimulator.query.all()
