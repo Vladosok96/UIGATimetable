@@ -298,6 +298,13 @@ def get_user_approval():
 
 @app.route("/admin_panel/")
 def admin_panel():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return redirect('/', 301)
+
     return render_template('admin_panel.html')
 
 
@@ -420,6 +427,3 @@ def day():
         response[busy.id] = busy_dictionary
 
     return response
-
-
-app.run(debug=True)
