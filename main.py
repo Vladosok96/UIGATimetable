@@ -159,6 +159,9 @@ def send_simulator():
 
 @app.route("/get_simulators_list/")
 def get_simulators_list():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
     simulators = FlightSimulator.query.all()
 
     response = {}
@@ -312,6 +315,9 @@ def admin_panel():
 def register_train(simulator_id):
     db.create_all()
 
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
     simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
 
     return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name)
@@ -351,6 +357,9 @@ def send_busies_list():
 
 @app.route("/month/")
 def month():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
     month_value = int(request.args['month'])
     year_value = int(request.args['year'])
 
@@ -384,6 +393,9 @@ def month():
 
 @app.route("/day/")
 def day():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
     day_value = datetime.datetime.strptime(request.args['day'], '%d.%m.%Y').date()
     simulator_id = int(request.args['simulator_id'])
 
