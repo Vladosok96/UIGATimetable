@@ -1,5 +1,5 @@
 # UIGATimetable
 Запуск программы:
 ```
-flask --app main run
+python wsgi.py
 ```
