@@ -50,80 +50,74 @@
         cursor: pointer;
     }
 
-    .container {
-        width: 1000px;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        margin: 0 auto;
+    h2 {
+        margin-top: 30px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <a href="/simulators_list"><- к списку тренажеров</a>
-    <h2>Заявки на регистрацию тренировки</h2>
-    <div id="schedule-block">
-        <div id="schedule-table-block">
-            <table id="schedule-table">
-                <thead>
-                    <tr>
-                        <th>День</th>
-                        <th>Начало</th>
-                        <th>Конец</th>
-                        <th>Название компании</th>
-                        <th>Название тренажера</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
-                <tbody id="schedule-body"></tbody>
-            </table>
-        </div>
+<a href="/simulators_list"><- к списку тренажеров</a>
+<h2>Заявки на регистрацию тренировки</h2>
+<div id="schedule-block">
+    <div id="schedule-table-block">
+        <table id="schedule-table">
+            <thead>
+                <tr>
+                    <th>День</th>
+                    <th>Начало</th>
+                    <th>Конец</th>
+                    <th>Название компании</th>
+                    <th>Название тренажера</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody id="schedule-body"></tbody>
+        </table>
     </div>
-    <h2>Заявки на регистрацию компании</h2>
-    <div id="users-block">
-        <div id="users-table-block">
-            <table id="users-table">
-                <thead>
-                    <tr>
-                        <th>Название компании</th>
-                        <th>Номер договора</th>
-                        <th>Логин</th>
-                        <th>Почта</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
-                <tbody id="users-body"></tbody>
-            </table>
-        </div>
+</div>
+<h2>Заявки на регистрацию компании</h2>
+<div id="users-block">
+    <div id="users-table-block">
+        <table id="users-table">
+            <thead>
+                <tr>
+                    <th>Название компании</th>
+                    <th>Номер договора</th>
+                    <th>Логин</th>
+                    <th>Почта</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody id="users-body"></tbody>
+        </table>
     </div>
-    <h2>Список тренажеров</h2>
-    <div id="simulators-block">
-        <div id="simulators-table-block">
-            <table id="simulators-table">
-                <thead>
-                    <tr>
-                        <th>Название</th>
-                        <th>Название (анг.)</th>
-                        <th>Описание</th>
-                        <th>Кабинет</th>
-                        <th>Действие</th>
-                    </tr>
-                </thead>
-                <tbody id="simulators-body">
-                    <tr id="simulators-form-row">
-                        <form action="" id="simulators-form">
-                            <th><input type="text" name="name"></th>
-                            <th><input type="text" name="english_name"></th>
-                            <th><input type="text" name="caption"></th>
-                            <th><input type="text" name="auditory"></th>
-                            <th><input type="submit" value="+"></th>
-                        </form>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+</div>
+<h2>Список тренажеров</h2>
+<div id="simulators-block">
+    <div id="simulators-table-block">
+        <table id="simulators-table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Название (анг.)</th>
+                    <th>Описание</th>
+                    <th>Кабинет</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody id="simulators-body">
+                <tr id="simulators-form-row">
+                    <form action="" id="simulators-form">
+                        <th><input type="text" name="name"></th>
+                        <th><input type="text" name="english_name"></th>
+                        <th><input type="text" name="caption"></th>
+                        <th><input type="text" name="auditory"></th>
+                        <th><input type="submit" value="+"></th>
+                    </form>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
 

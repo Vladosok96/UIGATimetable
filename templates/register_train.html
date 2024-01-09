@@ -19,7 +19,8 @@
     }
 
     #selected_day {
-        background-color: #f2f2f2;
+        background: linear-gradient(to bottom right, #59b2f3, #b3d8f1);
+        color: white;
     }
 
     #calendar {
@@ -36,13 +37,12 @@
         width: 400px;
     }
 
-    #nav-buttons {
+    #calendar-buttons {
         text-align: center;
-        margin-bottom: 20px;
     }
 
     #prev-month, #next-month {
-        background-color: #4CAF50;
+        background: linear-gradient(to bottom right, #005898, #73aad1);
         color: white;
         border: none;
         padding: 10px 15px;
@@ -54,60 +54,58 @@
         cursor: pointer;
     }
 
-    .container {
-        width: 1000px;
-        display: flex;
-        flex-direction: column;
-        align-items: stretch;
-        margin: 0 auto;
+    #schedule-block {
+        margin-top: 20px;
+    }
+
+    #schedule_form_block {
+        margin-top: 20px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <a href="/simulators_list"><- к списку тренажеров</a>
-    <h2>Регистрация для тренажера {{ simulator_name }} на <span id="current-month"></span></h2>
-    <div id="nav-buttons">
-        <button id="prev-month" onclick="prevMonth()">Пред. месяц</button>
-        <button id="next-month" onclick="nextMonth()">След. месяц</button>
-    </div>
-    <table id="calendar">
-        <thead>
-        <tr>
-            <th>Пн</th>
-            <th>Вт</th>
-            <th>Ср</th>
-            <th>Чт</th>
-            <th>Пт</th>
-            <th>Сб</th>
-            <th>Вс</th>
-        </tr>
-        </thead>
-        <tbody id="calendar-body"></tbody>
-    </table>
-    <div id="schedule-block" hidden>
-        <p>Расписание полетов на <span id="schedule-date"></span>:</p>
-        <div id="schedule-table-block">
-            <form action="" id="schedule-form">
-                <table id="schedule-table">
-                    <thead>
-                    <tr>
-                        <th>№</th>
-                        <th>Начало</th>
-                        <th>Конец</th>
-                        <th>Название компании</th>
-                        <th>Выбор</th>
-                    </tr>
-                    </thead>
-                    <tbody id="schedule-body"></tbody>
-                </table>
-                <div id="schedule_form_block" hidden="hidden">
-                    <input type="submit" value="Отправить заявку">
-                    <p id="schedule-response"></p>
-                </div>
-            </form>
-        </div>
+<a href="/simulators_list"><- к списку тренажеров</a>
+<h2>Регистрация для тренажера {{ simulator_name }} на <span id="current-month"></span></h2>
+<div id="calendar-buttons">
+    <button id="prev-month" onclick="prevMonth()">Пред. месяц</button>
+    <button id="next-month" onclick="nextMonth()">След. месяц</button>
+</div>
+<table id="calendar">
+    <thead>
+    <tr>
+        <th>Пн</th>
+        <th>Вт</th>
+        <th>Ср</th>
+        <th>Чт</th>
+        <th>Пт</th>
+        <th>Сб</th>
+        <th>Вс</th>
+    </tr>
+    </thead>
+    <tbody id="calendar-body"></tbody>
+</table>
+<div id="schedule-block" hidden>
+    <p>Расписание полетов на <span id="schedule-date"></span>:</p>
+    <div id="schedule-table-block">
+        <form action="" id="schedule-form">
+            <table id="schedule-table">
+                <thead>
+                <tr>
+                    <th>№</th>
+                    <th>Начало</th>
+                    <th>Конец</th>
+                    <th>Название компании</th>
+                    <th>Выбор</th>
+                </tr>
+                </thead>
+                <tbody id="schedule-body"></tbody>
+            </table>
+            <div id="schedule_form_block" hidden="hidden">
+                <input type="submit" value="Отправить заявку">
+                <p id="schedule-response"></p>
+            </div>
+        </form>
     </div>
 </div>
 

@@ -1,23 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Авторизация{% endblock %}
 {% block content %}
-    <div class="container">
-        
-        <form method="post" action="/auth">
-            <p>
-                <label>Логин</label>
-                <input type="text" name="login">
-            </p>
-            <p>
-                <label>Пароль (номер договора)</label>
-                <input type="password" name="password">
-            </p>
-            {% if message %}
-                <p>{{ message }}</p>
-            {% endif %}
-            <p>
-                <input type="submit" value="Войти"> или <a href="/register_user">Отправить заявку</a>
-            </p>
-        </form>
-    </div>
+<form method="post" action="/auth">
+    <p>
+        <label>Логин</label>
+        <input type="text" name="login">
+    </p>
+    <p>
+        <label>Пароль (номер договора)</label>
+        <input type="password" name="password">
+    </p>
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+    <p>
+        <input type="submit" value="Войти"> или <a href="/register_user">Отправить заявку</a>
+    </p>
+</form>
 {% endblock %}

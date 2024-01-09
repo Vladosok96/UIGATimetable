@@ -185,12 +185,14 @@ def simulators_list():
     if session.get('id') == None:
         return redirect('/auth', 301)
 
+    company_name = Company.query.filter(Company.id == session.get('id')).first().name
+
     user = Company.query.filter(Company.id == session.get('id')).first()
     is_admin = False
     if user.admin > 0:
         is_admin = True
 
-    return render_template('simulators_list.html', is_admin=is_admin)
+    return render_template('simulators_list.html', is_admin=is_admin, company_name=company_name)
 
 
 @app.route("/send_approve/")
@@ -304,11 +306,13 @@ def admin_panel():
     if session.get('id') == None:
         return redirect('/auth', 301)
 
+    company_name = Company.query.filter(Company.id == session.get('id')).first().name
+
     user = Company.query.filter(Company.id == session.get('id')).first()
     if user.admin == 0:
         return redirect('/', 301)
 
-    return render_template('admin_panel.html')
+    return render_template('admin_panel.html', company_name=company_name)
 
 
 @app.route("/register_train/<simulator_id>")
@@ -318,9 +322,11 @@ def register_train(simulator_id):
     if session.get('id') == None:
         return redirect('/auth', 301)
 
+    company_name = Company.query.filter(Company.id == session.get('id')).first().name
+
     simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
 
-    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name)
+    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name)
 
 
 @app.route("/send_busies_list/")

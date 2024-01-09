@@ -3,9 +3,99 @@
     <head>
         <meta charset="utf-8" />
         <title>{% block title %}{% endblock %} - УИГА: тренажерный центр</title>
+        <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+        <style>
+            html, body {
+                height: 100%
+            }
+
+            body {
+                display: flex;
+                align-items: stretch;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            #navigation-block {
+                z-index: 3px;
+                position: absolute;
+                width:100%;
+                height: 60px;
+                background: linear-gradient(to bottom right, #005898, #73aad1);
+                box-shadow: black 0px 0px 10px;
+                z-index: 1;
+            }
+
+            .container {
+                position: absolute;
+                z-index: 2px;
+                width: 1000px;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                margin: 0 auto;
+                padding: 80px 20px;
+                background-color: white;
+            }
+
+            #navigation-container {
+                display: flex;
+                width: 1000px;
+                height: 100%;
+                margin: 0 auto;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            #root {
+                z-index: 1px;
+                position: fixed;
+                height: 100%;
+                width: 100%;
+                background-image: url({{ url_for('static', filename='img/background.jpg') }});
+                background-size: cover;
+                filter: blur(5px);
+                transition: 1s;
+            }
+
+            #root:hover {
+                filter: blur(1px);
+            }
+
+            .navigation-text {
+                font-size: 20px;
+                font-weight: 500;
+                font-family: monospace;
+                color: white;
+            }
+
+            #navigation-logout {
+                background-color: white;
+                color: #005898;
+                padding: 6px 20px;
+                text-decoration: none;
+                transition: 0.3s;
+            }
+            #navigation-logout:hover {
+                background-color: #afc1db;
+            }
+        </style>
         {% block head %}{% endblock %}
     </head>
     <body>
-        {% block content %}{% endblock %}
+        <div id="root"></div>
+        <div id="navigation-block">
+            <div id="navigation-container">
+                <div id="navigation-title" class="navigation-text">Тренажерный центр - УИГА</div>
+                {% if company_name is defined %}
+                    <div id="navigation-name" class="navigation-text">{{company_name}}</div>
+                    <a href="/logout" id="navigation-logout" class="navigation-text">Выйти</a>
+                {% endif %}
+            </div>
+        </div>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+        <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     </body>
 </html>

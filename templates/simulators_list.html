@@ -1,28 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Список тренажеров</title>
-    <style>
-        .container {
-            width: 800px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 0 auto;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        {% if is_admin == True %}
-        <a href="/admin_panel">Перейти в средство администрирования</a>
-        {% endif %}
-        <h2>Список тренажеров</h2>
-        <ul id="simulators-ulist"></ul>
-    </div>
+{% extends "base.html" %}
+{% block title %}Список тренажеров{% endblock %}
 
-    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/simulators_list.js') }}"></script>
-</body>
-</html>
+{% block head %}
+<style>
+</style>
+{% endblock %}
+
+{% block content %}
+{% if is_admin == True %}
+<a href="/admin_panel">Перейти в средство администрирования</a>
+{% endif %}
+<h2>Список тренажеров</h2>
+<ul id="simulators-ulist"></ul>
+
+<script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/simulators_list.js') }}"></script>
+{% endblock %}
