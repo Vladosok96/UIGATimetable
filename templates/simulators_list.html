@@ -3,6 +3,20 @@
 
 {% block head %}
 <style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 8px;
+    }
+
+    thead th {
+        background-color: #f2f2f2;
+    }
 </style>
 {% endblock %}
 
@@ -11,7 +25,17 @@
 <a href="/admin_panel">Перейти в средство администрирования</a>
 {% endif %}
 <h2>Список тренажеров</h2>
-<ul id="simulators-ulist"></ul>
+<table id="simulators-table">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Описание</th>
+            <th>Кабинет</th>
+            <th>Ссылка</th>
+        </tr>
+    </thead>
+    <tbody id="simulators-body"></tbody>
+</table>
 
 <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/simulators_list.js') }}"></script>
