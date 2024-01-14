@@ -51,7 +51,6 @@ class FlightSimulator(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    english_name = db.Column(db.String(100), nullable=False)
     caption = db.Column(db.String(1024), nullable=False)
     auditory = db.Column(db.String(100), nullable=False)
     busy = db.relationship('Busy', backref='flight_simulator', lazy=True)
@@ -140,7 +139,6 @@ def send_simulator():
 
     if action == 'add':
         name = request.args.get('name')
-        english_name = request.args.get('english_name')
         caption = request.args.get('caption')
         auditory = request.args.get('auditory')
 
@@ -148,12 +146,23 @@ def send_simulator():
         if simulators_count > 0:
             return {'error': True, 'response': 'Тренажер с таким именем уже существует'}
 
-        new_simulator = FlightSimulator(name=name, english_name=english_name, caption=caption, auditory=auditory)
+        new_simulator = FlightSimulator(name=name, caption=caption, auditory=auditory)
         db.session.add(new_simulator)
         db.session.commit()
 
         return {'error': False, 'response': 'Успешно добавлено'}
     elif action == 'delete':
+        simulator_id = int(request.args.get('simulator_id'))
+
+        busies = Busy.query.filter(Busy.simulator_id == simulator_id).all()
+        simulator = FlightSimulator.query.filter(FlightSimulator.id == simulator_id).first()
+
+        for busy in busies:
+            db.session.delete(busy)
+
+        db.session.delete(simulator)
+        db.session.commit()
+
         return {'error': False, 'response': 'Успешно удалено'}
 
 
@@ -169,7 +178,6 @@ def get_simulators_list():
         simulator_dict = {
             'id': simulator.id,
             'name': simulator.name,
-            'english_name': simulator.english_name,
             'caption': simulator.caption,
             'auditory': simulator.auditory
         }
@@ -325,8 +333,9 @@ def register_train(simulator_id):
     company_name = Company.query.filter(Company.id == session.get('id')).first().name
 
     simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
+    is_admin = Company.query.filter(Company.id == session.get('id')).first().admin
 
-    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name)
+    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name, is_admin=is_admin)
 
 
 @app.route("/send_busies_list/")
@@ -356,6 +365,29 @@ def send_busies_list():
 
         busy.company_id = session.get('id')
         busy.approved = 0
+    db.session.commit()
+
+    return {'error': False, 'response': 'Запрос отправлен'}
+
+
+@app.route("/send_admin_busies_list/")
+def send_admin_busies_list():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+
+    action = request.args.get('action')
+
+    if action == 'delete':
+        busy_id = request.args.get('id')
+
+        busy = Busy.query.filter(Busy.id == busy_id).first()
+        busy.company_id = None
+        busy.approved = 1
+
     db.session.commit()
 
     return {'error': False, 'response': 'Запрос отправлен'}

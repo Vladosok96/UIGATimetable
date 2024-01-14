@@ -166,18 +166,15 @@ function update_simulators() {
         simulator = data[Object.keys(data)[i]];
         simulator_row = document.createElement('tr');
         cell_name = document.createElement('td');
-        cell_english_name = document.createElement('td');
         cell_caption = document.createElement('td');
         cell_auditory = document.createElement('td');
         cell_action = document.createElement('td');
 
         cell_name.textContent = simulator.name;
-        cell_english_name.textContent = simulator.english_name;
         cell_caption.textContent = simulator.caption;
         cell_auditory.textContent = simulator.auditory;
 
         simulator_row.appendChild(cell_name);
-        simulator_row.appendChild(cell_english_name);
         simulator_row.appendChild(cell_caption);
         simulator_row.appendChild(cell_auditory);
 
@@ -185,16 +182,20 @@ function update_simulators() {
 
         action_delete.textContent = '-';
         action_delete.simulator_id = simulator.id;
+        action_delete.simulator_name = simulator.name;
         action_delete.onclick = function(block) {
-          $.ajax({
-            url: '/send_simulator',
-            method: 'get',
-            dataType: 'json',
-            data: {'id': block.srcElement.simulator_id, 'action': 'delete'},
-            success: function(data) {
-              update_simulators();
-            }
-          });
+          if (confirm("Вы точно хотите удалить тренажер " + block.srcElement.simulator_name + "?\nЭто действие нельязя будет отменить!")) {
+            $.ajax({
+              url: '/send_simulator',
+              method: 'get',
+              dataType: 'json',
+              data: {'simulator_id': block.srcElement.simulator_id, 'action': 'delete'},
+              success: function(data) {
+                update_simulators();
+                alert(data.response);
+              }
+            });
+          }
         }
 
         cell_action.appendChild(action_delete);
@@ -220,15 +221,14 @@ simulators_form.addEventListener("submit", async function(e) {
 
   values = e.srcElement;
   name = values[0].value;
-  english_name = values[1].value;
-  caption = values[2].value;
-  auditory = values[3].value;
+  caption = values[1].value;
+  auditory = values[2].value;
 
   $.ajax({
     url: '/send_simulator',
     method: 'get',
     dataType: 'json',
-    data: {'name': name, 'english_name': english_name, 'caption': caption, 'auditory': auditory, 'action': 'add'},
+    data: {'name': name, 'caption': caption, 'auditory': auditory, 'action': 'add'},
     success: function(data) {
       update_simulators();
       if (data.error == true) {
