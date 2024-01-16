@@ -66,36 +66,6 @@ def index():
     return redirect('/simulators_list', 301)
 
 
-@app.route("/register_user/", methods=['GET', 'POST'])
-def user_registration():
-    if session.get('id') != None:
-        return redirect('/simulators_list', 301)
-
-    message = ''
-    if request.method == 'POST' and request.form.get('login'):
-        login = request.form.get('login')
-        password = request.form.get('password')
-        company_name = request.form.get('company_name')
-        mail = request.form.get('mail')
-
-        user = Company.query.filter(Company.login == login).first()
-        if user:
-            message = "Компания с таким логином уже зарегистрирована или ожидает подтверждения!"
-        else:
-            new_user = Company(name=company_name, login=login, document_id_hash=password, mail=mail, admin=0, approved=0)
-            message = 'Заявка отправлена'
-
-            if len(Company.query.all()) == 0:
-                new_user.admin = 1
-                new_user.approved = 1
-                message = 'Зарегистрирован аккаунт администратора'
-            
-            db.session.add(new_user)
-            db.session.commit()
-
-    return render_template('register_user.html', message=message)
-
-
 @app.route("/auth/", methods=['GET', 'POST'])
 def auth():
     if session.get('id') != None:
@@ -108,7 +78,7 @@ def auth():
         login = request.form.get('login')
         password = request.form.get('password')
 
-        user = Company.query.filter(Company.document_id_hash == password).filter(Company.login == login).first()
+        user = Company.query.filter(Company.document_id_hash == password).filter(Company.id == login).first()
         if user and user.approved == 0:
             message = 'Аккаунт ожидает подтверждения!'
         elif user:
@@ -462,8 +432,14 @@ def day():
     response = {}
     for busy in busies:
         company_name = ""
+        self_booked = False
         if busy.company_id != None:
-            company_name = Company.query.filter(Company.id == busy.company_id).first().name
+            user = Company.query.filter(Company.id == session.get('id')).first()
+            if user.id == busy.company_id or user.admin > 0:
+                self_booked = True
+                company_name = Company.query.filter(Company.id == busy.company_id).first().name
+            else:
+                company_name = 'Забронированно'
 
         busy_dictionary = {
             'id': busy.id,
@@ -472,8 +448,25 @@ def day():
             'day_id': busy.day_id,
             'company_name': company_name,
             'simulator_id': busy.simulator_id,
-            'approved': busy.approved
+            'approved': busy.approved,
+            'self_booked': self_booked
         }
         response[busy.id] = busy_dictionary
+
+    return response
+
+
+@app.route("/get_logins/")
+def get_logins():
+    users = Company.query.all()
+    response = {}
+
+    for user in users:
+        if user.admin > 0:
+            continue
+        response[user.id] = {
+            'id': user.id,
+            'name': user.name
+        }
 
     return response

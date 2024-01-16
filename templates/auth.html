@@ -3,8 +3,9 @@
 {% block content %}
 <form method="post" action="/auth">
     <p>
-        <label>Логин</label>
-        <input type="text" name="login">
+        <label for="login">Название авиакомпании</label>
+        <select name="login" id="login">
+        </select>
     </p>
     <p>
         <label>Пароль (номер договора)</label>
@@ -14,7 +15,10 @@
         <p>{{ message }}</p>
     {% endif %}
     <p>
-        <input type="submit" value="Войти"> или <a href="/register_user">Отправить заявку</a>
+        <input type="submit" value="Войти">
     </p>
+
+    <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/login.js') }}"></script>
 </form>
 {% endblock %}
