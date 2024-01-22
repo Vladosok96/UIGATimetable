@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Регистация тренировки{% endblock %}
+
+{% block head %}
+<style>
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #dddddd;
+        text-align: center;
+        padding: 8px;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+
+    #selected_day {
+        background: linear-gradient(to bottom right, #59b2f3, #b3d8f1);
+        color: white;
+    }
+
+    #calendar {
+        margin-top: 20px;
+    }
+
+    #current-month {
+        text-align: center;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .calendar-block {
+        width: 400px;
+    }
+
+    #calendar-buttons {
+        text-align: center;
+    }
+
+    #prev-month, #next-month {
+        background: linear-gradient(to bottom right, #005898, #73aad1);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        cursor: pointer;
+    }
+
+    #schedule-block {
+        margin-top: 20px;
+    }
+
+    #schedule_form_block {
+        margin-top: 20px;
+    }
+
+    #schedule-admin-navigation {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/unauthorized_simulators_list"><- к списку тренажеров</a>
+<h2>Расписание для тренажера {{ simulator_name }} на <span id="current-month"></span></h2>
+<div id="calendar-buttons">
+    <button id="prev-month" onclick="prevMonth()">Пред. месяц</button>
+    <button id="next-month" onclick="nextMonth()">След. месяц</button>
+</div>
+<table id="calendar">
+    <thead>
+    <tr>
+        <th>Пн</th>
+        <th>Вт</th>
+        <th>Ср</th>
+        <th>Чт</th>
+        <th>Пт</th>
+        <th>Сб</th>
+        <th>Вс</th>
+    </tr>
+    </thead>
+    <tbody id="calendar-body"></tbody>
+</table>
+<div id="schedule-block" hidden>
+    <p>Расписание полетов на <span id="schedule-date"></span>:</p>
+    <div id="schedule-table-block">
+        <table id="schedule-table">
+            <thead>
+            <tr>
+                <th>№</th>
+                <th>Начало</th>
+                <th>Конец</th>
+                <th>Статус</th>
+            </tr>
+            </thead>
+            <tbody id="schedule-body"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    var simulator_id = '{{simulator_id}}';
+</script>
+
+<script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/unauthorized_calendar.js') }}"></script>
+{% endblock %}

@@ -66,6 +66,30 @@ def index():
     return redirect('/simulators_list', 301)
 
 
+@app.route("/admin_auth/", methods=['GET', 'POST'])
+def admin_auth():
+    if session.get('id') != None:
+        return redirect('/simulators_list', 301)
+
+    db.create_all()
+
+    message = ''
+    if request.method == 'POST' and request.form.get('login'):
+        login = request.form.get('login')
+        password = request.form.get('password')
+
+        user = Company.query.filter(Company.document_id_hash == password).filter(Company.login == login).first()
+        if user and user.approved == 0:
+            message = 'Аккаунт ожидает подтверждения!'
+        elif user:
+            session['id'] = user.id
+            return redirect('/simulators_list', 301)
+        else:
+            message = 'Неверный логин или пароль!'
+
+    return render_template('admin_auth.html', message=message)
+
+
 @app.route("/auth/", methods=['GET', 'POST'])
 def auth():
     if session.get('id') != None:
@@ -138,9 +162,6 @@ def send_simulator():
 
 @app.route("/get_simulators_list/")
 def get_simulators_list():
-    if session.get('id') == None:
-        return redirect('/auth', 301)
-
     simulators = FlightSimulator.query.all()
 
     response = {}
@@ -171,6 +192,13 @@ def simulators_list():
         is_admin = True
 
     return render_template('simulators_list.html', is_admin=is_admin, company_name=company_name)
+
+
+@app.route("/unauthorized_simulators_list/")
+def unauthorized_simulators_list():
+    db.create_all()
+
+    return render_template('unauthorized_simulators_list.html')
 
 
 @app.route("/send_approve/")
@@ -308,6 +336,15 @@ def register_train(simulator_id):
     return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name, is_admin=is_admin)
 
 
+@app.route("/unauthorized_timetable/<simulator_id>")
+def unauthorized_timetable(simulator_id):
+    db.create_all()
+
+    simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
+
+    return render_template('unauthorized_timetable.html', simulator_id=simulator_id, simulator_name=simulator_name)
+
+
 @app.route("/send_busies_list/")
 def send_busies_list():
     if session.get('id') == None:
@@ -365,9 +402,6 @@ def send_admin_busies_list():
 
 @app.route("/month/")
 def month():
-    if session.get('id') == None:
-        return redirect('/auth', 301)
-
     month_value = int(request.args['month'])
     year_value = int(request.args['year'])
 
@@ -401,9 +435,6 @@ def month():
 
 @app.route("/day/")
 def day():
-    if session.get('id') == None:
-        return redirect('/auth', 301)
-
     day_value = datetime.datetime.strptime(request.args['day'], '%d.%m.%Y').date()
     simulator_id = int(request.args['simulator_id'])
 
