@@ -18,6 +18,98 @@ function getDaysInMonth(year, month) {
   return new Date(year, month + 1, 0).getDate();
 }
 
+
+function update_busies(date) {
+  $.ajax({
+    url: '/day/',
+    method: 'get',
+    dataType: 'json',
+    data: {'day': date, 'simulator_id': simulator_id},
+    success: function(data) {
+
+      let schedule_body = document.getElementById("schedule-body");
+      while (schedule_body.lastElementChild) {
+        schedule_body.removeChild(schedule_body.lastElementChild);
+      }
+
+      for (let i = 0; i < Object.keys(data).length; i++) {
+        let busy = data[Object.keys(data)[i]];
+        busy_row = document.createElement("tr");
+        cell_n = document.createElement("td");
+        cell_from = document.createElement("td");
+        cell_to = document.createElement("td");
+        cell_name = document.createElement("td");
+        cell_n.textContent = i + 1;
+        cell_from.textContent = busy.start_time;
+        cell_to.textContent = busy.end_time;
+        cell_name.textContent = busy.company_name;
+
+        if (busy.approved == 0) {
+          cell_name.textContent += ' (на рассмотрении)';
+        }
+
+        busy_row.appendChild(cell_n);
+        busy_row.appendChild(cell_from);
+        busy_row.appendChild(cell_to);
+        busy_row.appendChild(cell_name);
+
+        cell_input = document.createElement("td");
+
+        if (is_admin > 0) {
+        }
+        else if (busy.company_id == company_id) {
+          remove_button = document.createElement("button");
+          remove_button.textContent = 'Отменить';
+          remove_button.addEventListener("click", async function(e) {
+            e.preventDefault();
+
+            await $.ajax({
+              url: '/delete_busy',
+              method: 'get',
+              dataType: 'json',
+              data: {'id': busy.id},
+              success: function(data) {
+                update_busies(date);
+                alert(data.response);
+              }
+            });
+          });
+          cell_input.appendChild(remove_button);
+        }
+        else {
+          checkbox_block = document.createElement("input");
+          checkbox_block.setAttribute('type', 'checkbox');
+          checkbox_block.setAttribute('name', busy.id);
+          if (busy.company_name != "") {
+            checkbox_block.setAttribute('disabled', 'disabled');
+          }
+
+          checkbox_block.onchange = function(data) {
+            if (data.srcElement.checked) {
+              checked_count++;
+            }
+            else {
+              checked_count--;
+            }
+
+            if (checked_count > 0) {
+              document.getElementById("schedule_form_block").removeAttribute('hidden');
+            }
+            else {
+              document.getElementById("schedule_form_block").setAttribute('hidden', 'hidden');
+            }
+          }
+          cell_input.appendChild(checkbox_block);
+        }
+        busy_row.appendChild(cell_input);
+
+        schedule_body.appendChild(busy_row);
+      }
+    }
+  });
+};
+
+
 // Функция для создания ячеек календаря
 function createCalendarCells(year, month) {
   const firstDay = new Date(year, month, 1);
@@ -65,77 +157,7 @@ function createCalendarCells(year, month) {
               document.getElementById("schedule-block").removeAttribute('hidden');
               document.getElementById("schedule-date").innerHTML = date_block.date;
 
-              $.ajax({
-                url: '/day/',
-                method: 'get',
-                dataType: 'json',
-                data: {'day': date_block.date, 'simulator_id': simulator_id},
-                success: function(data) {
-
-                  let schedule_body = document.getElementById("schedule-body");
-                  while (schedule_body.lastElementChild) {
-                    schedule_body.removeChild(schedule_body.lastElementChild);
-                  }
-
-                  for (let i = 0; i < Object.keys(data).length; i++) {
-                    let busy = data[Object.keys(data)[i]];
-                    busy_row = document.createElement("tr");
-                    cell_n = document.createElement("td");
-                    cell_from = document.createElement("td");
-                    cell_to = document.createElement("td");
-                    cell_name = document.createElement("td");
-                    cell_n.textContent = i + 1;
-                    cell_from.textContent = busy.start_time;
-                    cell_to.textContent = busy.end_time;
-                    cell_name.textContent = busy.company_name;
-
-                    if (busy.approved == 0) {
-                      cell_name.textContent += ' (на рассмотрении)';
-                    }
-
-                    busy_row.appendChild(cell_n);
-                    busy_row.appendChild(cell_from);
-                    busy_row.appendChild(cell_to);
-                    busy_row.appendChild(cell_name);
-
-                    cell_input = document.createElement("td");
-
-                    if (is_admin > 0) {
-                      let schedule_admin_navigation = document.getElementById("schedule-admin-navigation");
-                      schedule_admin_navigation.removeAttribute('hidden')
-                    }
-                    else {
-                      checkbox_block = document.createElement("input");
-                      checkbox_block.setAttribute('type', 'checkbox');
-                      checkbox_block.setAttribute('name', busy.id);
-                      if (busy.company_name != "") {
-                        checkbox_block.setAttribute('disabled', 'disabled');
-                      }
-
-                      checkbox_block.onchange = function(data) {
-                        if (data.srcElement.checked) {
-                          checked_count++;
-                        }
-                        else {
-                          checked_count--;
-                        }
-
-                        if (checked_count > 0) {
-                          document.getElementById("schedule_form_block").removeAttribute('hidden');
-                        }
-                        else {
-                          document.getElementById("schedule_form_block").setAttribute('hidden', 'hidden');
-                        }
-                      }
-
-                      cell_input.appendChild(checkbox_block);
-                    }
-                    busy_row.appendChild(cell_input);
-
-                    schedule_body.appendChild(busy_row);
-                  }
-                }
-              });
+              update_busies(date_block.date);
             };
 
             cell.textContent = dayCount;
@@ -218,221 +240,5 @@ schedule_form.addEventListener("submit", async function(e) {
     }
   });
 
-  $.ajax({
-    url: '/day/',
-    method: 'get',
-    dataType: 'json',
-    data: {'day': selected_day, 'simulator_id': simulator_id},
-    success: function(data) {
-      let schedule_body = document.getElementById("schedule-body");
-      while (schedule_body.lastElementChild) {
-        schedule_body.removeChild(schedule_body.lastElementChild);
-      }
-
-      for (let i = 0; i < Object.keys(data).length; i++) {
-        let busy = data[Object.keys(data)[i]];
-        busy_row = document.createElement("tr");
-        cell_n = document.createElement("td");
-        cell_from = document.createElement("td");
-        cell_to = document.createElement("td");
-        cell_name = document.createElement("td");
-        cell_n.textContent = i + 1;
-        cell_from.textContent = busy.start_time;
-        cell_to.textContent = busy.end_time;
-        cell_name.textContent = busy.company_name;
-
-        if (busy.approved == 0) {
-          cell_name.textContent += ' (на рассмотрении)';
-        }
-
-        busy_row.appendChild(cell_n);
-        busy_row.appendChild(cell_from);
-        busy_row.appendChild(cell_to);
-        busy_row.appendChild(cell_name);
-
-        cell_input = document.createElement("td");
-        if (is_admin > 0) {
-          let schedule_admin_navigation = document.getElementById("schedule-admin-navigation");
-          schedule_admin_navigation.removeAttribute('hidden')
-        }
-        else {
-          checkbox_block = document.createElement("input");
-          checkbox_block.setAttribute('type', 'checkbox');
-          checkbox_block.setAttribute('name', busy.id);
-          if (busy.company_name != "") {
-            checkbox_block.setAttribute('disabled', 'disabled');
-          }
-
-          checkbox_block.onchange = function(data) {
-            if (data.srcElement.checked) {
-              checked_count++;
-            }
-            else {
-              checked_count--;
-            }
-
-            if (checked_count > 0) {
-              document.getElementById("schedule_form_block").removeAttribute('hidden');
-            }
-            else {
-              document.getElementById("schedule_form_block").setAttribute('hidden', 'hidden');
-            }
-          }
-
-          cell_input.appendChild(checkbox_block);
-        }
-        busy_row.appendChild(cell_input);
-
-        schedule_body.appendChild(busy_row);
-      }
-    }
-  });
-});
-
-
-let button_admin_accept = document.getElementById("button-admin-accept");
-let button_admin_add = document.getElementById("button-admin-add");
-let button_admin_delete = document.getElementById("button-admin-delete");
-
-function update_schedule_accept() {
-  $.ajax({
-    url: '/day/',
-    method: 'get',
-    dataType: 'json',
-    data: {'day': selected_day, 'simulator_id': simulator_id},
-    success: function(data) {
-      let schedule_body = document.getElementById("schedule-body");
-      while (schedule_body.lastElementChild) {
-        schedule_body.removeChild(schedule_body.lastElementChild);
-      }
-
-      for (let i = 0; i < Object.keys(data).length; i++) {
-        let busy = data[Object.keys(data)[i]];
-        busy_row = document.createElement("tr");
-        cell_n = document.createElement("td");
-        cell_from = document.createElement("td");
-        cell_to = document.createElement("td");
-        cell_name = document.createElement("td");
-        cell_input = document.createElement("td");
-        cell_n.textContent = i + 1;
-        cell_from.textContent = busy.start_time;
-        cell_to.textContent = busy.end_time;
-        cell_name.textContent = busy.company_name;
-
-        if (busy.approved == 0) {
-          cell_name.textContent += ' (на рассмотрении)';
-
-          action_approve = document.createElement('button');
-          action_decline = document.createElement('button');
-
-          action_approve.textContent = '+';
-          action_approve.busy_id = busy.id;
-          action_approve.setAttribute('type', 'button');
-          action_approve.onclick = function(block) {
-            $.ajax({
-              url: '/send_approve',
-              method: 'get',
-              dataType: 'json',
-              data: {'id': block.srcElement.busy_id, 'approved': 1},
-              success: function(data) {
-                update_schedule_accept();
-              }
-            });
-          }
-
-          action_decline.textContent = '-';
-          action_decline.busy_id = busy.id;
-          action_decline.setAttribute('type', 'button');
-          action_decline.onclick = function(block) {
-            $.ajax({
-              url: '/send_approve',
-              method: 'get',
-              dataType: 'json',
-              data: {'id': block.srcElement.busy_id, 'approved': 0},
-              success: function(data) {
-                update_schedule_accept();
-              }
-            });
-          }
-
-          cell_input.appendChild(action_approve);
-          cell_input.appendChild(action_decline);
-        }
-
-        busy_row.appendChild(cell_n);
-        busy_row.appendChild(cell_from);
-        busy_row.appendChild(cell_to);
-        busy_row.appendChild(cell_name);
-        busy_row.appendChild(cell_input);
-
-        schedule_body.appendChild(busy_row);
-      }
-    }
-  });
-}
-
-button_admin_accept.addEventListener("click", async function(e) {
-  update_schedule_accept()
-});
-
-function update_schedule_delete() {
-  $.ajax({
-    url: '/day/',
-    method: 'get',
-    dataType: 'json',
-    data: {'day': selected_day, 'simulator_id': simulator_id},
-    success: function(data) {
-      let schedule_body = document.getElementById("schedule-body");
-      while (schedule_body.lastElementChild) {
-        schedule_body.removeChild(schedule_body.lastElementChild);
-      }
-
-      for (let i = 0; i < Object.keys(data).length; i++) {
-        let busy = data[Object.keys(data)[i]];
-        busy_row = document.createElement("tr");
-        cell_n = document.createElement("td");
-        cell_from = document.createElement("td");
-        cell_to = document.createElement("td");
-        cell_name = document.createElement("td");
-        cell_input = document.createElement("td");
-        cell_n.textContent = i + 1;
-        cell_from.textContent = busy.start_time;
-        cell_to.textContent = busy.end_time;
-        cell_name.textContent = busy.company_name;
-
-        if (busy.company_name != '') {
-          action_remove = document.createElement('button');
-
-          action_remove.textContent = '-';
-          action_remove.busy_id = busy.id;
-          action_remove.setAttribute('type', 'button');
-          action_remove.onclick = function(block) {
-            $.ajax({
-              url: '/send_admin_busies_list',
-              method: 'get',
-              dataType: 'json',
-              data: {'id': block.srcElement.busy_id, 'action': 'delete'},
-              success: function(data) {
-                update_schedule_delete();
-              }
-            });
-          }
-
-          cell_input.appendChild(action_remove);
-        }
-
-        busy_row.appendChild(cell_n);
-        busy_row.appendChild(cell_from);
-        busy_row.appendChild(cell_to);
-        busy_row.appendChild(cell_name);
-        busy_row.appendChild(cell_input);
-
-        schedule_body.appendChild(busy_row);
-      }
-    }
-  });
-}
-
-button_admin_delete.addEventListener("click", async function(e) {
-  update_schedule_delete()
+  update_busies(selected_day);
 });

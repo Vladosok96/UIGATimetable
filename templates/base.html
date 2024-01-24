@@ -90,6 +90,8 @@
                 {% if company_name is defined %}
                     <div id="navigation-name" class="navigation-text">{{company_name}}</div>
                     <a href="/logout" id="navigation-logout" class="navigation-text">Выйти</a>
+                {% else %}
+                    <a href="/auth" id="navigation-login" class="navigation-text">Войти</a>
                 {% endif %}
             </div>
         </div>

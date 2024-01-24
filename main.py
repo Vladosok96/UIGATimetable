@@ -328,12 +328,14 @@ def register_train(simulator_id):
     if session.get('id') == None:
         return redirect('/auth', 301)
 
-    company_name = Company.query.filter(Company.id == session.get('id')).first().name
+    company = Company.query.filter(Company.id == session.get('id')).first()
+    company_id = company.id
+    company_name = company.name
 
     simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
     is_admin = Company.query.filter(Company.id == session.get('id')).first().admin
 
-    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name, is_admin=is_admin)
+    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name, is_admin=is_admin, company_id=company_id)
 
 
 @app.route("/unauthorized_timetable/<simulator_id>")
@@ -377,27 +379,25 @@ def send_busies_list():
     return {'error': False, 'response': 'Запрос отправлен'}
 
 
-@app.route("/send_admin_busies_list/")
-def send_admin_busies_list():
+@app.route("/delete_busy/")
+def delete_busy():
     if session.get('id') == None:
         return redirect('/auth', 301)
 
-    user = Company.query.filter(Company.id == session.get('id')).first()
-    if user.admin == 0:
-        return {'error': True, 'response': 'Недостаточно прав для данной операции'}
+    busy_id = request.args.get('id')
 
-    action = request.args.get('action')
+    busy = Busy.query.filter(Busy.id == busy_id).first()
 
-    if action == 'delete':
-        busy_id = request.args.get('id')
+    if session.get('id') != busy.company_id:
+        print(session.get('id'), busy_id)
+        return {'error': True, 'response': 'Вы не можете отменить чужие слоты'}
 
-        busy = Busy.query.filter(Busy.id == busy_id).first()
-        busy.company_id = None
-        busy.approved = 1
+    busy.company_id = None
+    busy.approved = 1
 
     db.session.commit()
 
-    return {'error': False, 'response': 'Запрос отправлен'}
+    return {'error': False, 'response': 'Успешно удалено'}
 
 
 @app.route("/month/")
@@ -463,12 +463,14 @@ def day():
     response = {}
     for busy in busies:
         company_name = ""
+        company_id = -1
         self_booked = False
         if busy.company_id != None:
             user = Company.query.filter(Company.id == session.get('id')).first()
-            if user.id == busy.company_id or user.admin > 0:
+            if user != None and (user.id == busy.company_id or user.admin > 0):
                 self_booked = True
                 company_name = Company.query.filter(Company.id == busy.company_id).first().name
+                company_id = Company.query.filter(Company.id == busy.company_id).first().id
             else:
                 company_name = 'Забронированно'
 
@@ -477,6 +479,7 @@ def day():
             'start_time': busy.start_time.strftime('%H:%M:%S'),
             'end_time': busy.end_time.strftime('%H:%M:%S'),
             'day_id': busy.day_id,
+            'company_id': company_id,
             'company_name': company_name,
             'simulator_id': busy.simulator_id,
             'approved': busy.approved,

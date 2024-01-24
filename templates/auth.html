@@ -1,5 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Авторизация{% endblock %}
+{% block head %}
+<style>
+    .message {
+        color: red;
+    }
+</style>
+{% endblock %}
 {% block content %}
 <form method="post" action="/auth">
     <p>
@@ -12,7 +19,7 @@
         <input type="password" name="password">
     </p>
     {% if message %}
-        <p>{{ message }}</p>
+        <p class="message">{{ message }}</p>
     {% endif %}
     <p>
         <input type="submit" value="Войти"> <a href="/admin_auth">вход для администраторов</a>

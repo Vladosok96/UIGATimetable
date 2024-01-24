@@ -91,16 +91,6 @@
 </table>
 <div id="schedule-block" hidden>
     <p>Расписание полетов на <span id="schedule-date"></span>:</p>
-    <div id="schedule-admin-navigation" hidden>
-        <button id="button-admin-accept">Ответить</button>
-        <button id="button-admin-add">Добавить</button>
-        <button id="button-admin-delete">Удалить</button>
-    </div>
-    <div id="button-admin-add-block" hidden>
-        <label for="button-admin-add-name">Авиакомпания:</label>
-        <select id="button-admin-add-name"></select>
-        <button id="button-admin-add-submit">Принять</button>
-    </div>
     <div id="schedule-table-block">
         <form action="" id="schedule-form">
             <table id="schedule-table">
@@ -125,6 +115,7 @@
 <script>
     var simulator_id = '{{simulator_id}}';
     var is_admin = {{is_admin}};
+    var company_id = {{company_id}};
 </script>
 
 <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
