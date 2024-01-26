@@ -78,6 +78,12 @@ def admin_auth():
         login = request.form.get('login')
         password = request.form.get('password')
 
+        if len(Company.query.all()) == 0:
+            new_user = Company(login=login, name='Администратор', document_id_hash=password, mail='', admin=1, approved=1)
+            db.session.add(new_user)
+            db.session.commit()
+            message = 'Зарегистрирован аккаунт администратора'
+        
         user = Company.query.filter(Company.document_id_hash == password).filter(Company.login == login).first()
         if user and user.approved == 0:
             message = 'Аккаунт ожидает подтверждения!'
@@ -101,7 +107,7 @@ def auth():
     if request.method == 'POST' and request.form.get('login'):
         login = request.form.get('login')
         password = request.form.get('password')
-
+        
         user = Company.query.filter(Company.document_id_hash == password).filter(Company.id == login).first()
         if user and user.approved == 0:
             message = 'Аккаунт ожидает подтверждения!'
