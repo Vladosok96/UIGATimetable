@@ -53,6 +53,7 @@ class FlightSimulator(db.Model):
     name = db.Column(db.String(100), nullable=False)
     caption = db.Column(db.String(1024), nullable=False)
     auditory = db.Column(db.String(100), nullable=False)
+    floating = db.Column(db.Integer, nullable=False)
     busy = db.relationship('Busy', backref='flight_simulator', lazy=True)
 
 
@@ -141,12 +142,13 @@ def send_simulator():
         name = request.args.get('name')
         caption = request.args.get('caption')
         auditory = request.args.get('auditory')
+        schedule = request.args.get('schedule')
 
         simulators_count = FlightSimulator.query.filter(FlightSimulator.name == name).count()
         if simulators_count > 0:
             return {'error': True, 'response': 'Тренажер с таким именем уже существует'}
 
-        new_simulator = FlightSimulator(name=name, caption=caption, auditory=auditory)
+        new_simulator = FlightSimulator(name=name, caption=caption, auditory=auditory, floating=int(schedule))
         db.session.add(new_simulator)
         db.session.commit()
 
@@ -176,7 +178,8 @@ def get_simulators_list():
             'id': simulator.id,
             'name': simulator.name,
             'caption': simulator.caption,
-            'auditory': simulator.auditory
+            'auditory': simulator.auditory,
+            'floating': simulator.floating
         }
         response[simulator.id] = simulator_dict
 

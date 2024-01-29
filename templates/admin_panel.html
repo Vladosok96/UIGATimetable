@@ -76,7 +76,7 @@
         </table>
     </div>
 </div>
-<h2>Список зарегистрированных компаний компании</h2>
+<h2>Список зарегистрированных компаний</h2>
 <div id="users-block">
     <div id="users-table-block">
         <table id="users-table">
@@ -102,6 +102,7 @@
                     <th>Название</th>
                     <th>Описание</th>
                     <th>Кабинет</th>
+                    <th>График</th>
                     <th>Действие</th>
                 </tr>
             </thead>
@@ -111,6 +112,12 @@
                         <th><input type="text" name="name"></th>
                         <th><input type="text" name="caption"></th>
                         <th><input type="text" name="auditory"></th>
+                        <th>
+                            <select name="schedule">
+                                <option value="0" selected>Постоянный</option>
+                                <option value="1">Плавающий</option>
+                            </select>
+                        </th>
                         <th><input type="submit" value="+"></th>
                     </form>
                 </tr>

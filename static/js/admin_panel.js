@@ -168,15 +168,24 @@ function update_simulators() {
         cell_name = document.createElement('td');
         cell_caption = document.createElement('td');
         cell_auditory = document.createElement('td');
+        cell_schedule = document.createElement('td');
         cell_action = document.createElement('td');
 
         cell_name.textContent = simulator.name;
         cell_caption.textContent = simulator.caption;
         cell_auditory.textContent = simulator.auditory;
 
+        if (simulator.floating == 1) {
+          cell_schedule.textContent = 'Плавающий';
+        }
+        else {
+          cell_schedule.textContent = 'Постоянный';
+        }
+
         simulator_row.appendChild(cell_name);
         simulator_row.appendChild(cell_caption);
         simulator_row.appendChild(cell_auditory);
+        simulator_row.appendChild(cell_schedule);
 
         action_delete = document.createElement('button');
 
@@ -223,12 +232,13 @@ simulators_form.addEventListener("submit", async function(e) {
   name = values[0].value;
   caption = values[1].value;
   auditory = values[2].value;
+  schedule = values[3].value;
 
   $.ajax({
     url: '/send_simulator',
     method: 'get',
     dataType: 'json',
-    data: {'name': name, 'caption': caption, 'auditory': auditory, 'action': 'add'},
+    data: {'name': name, 'caption': caption, 'auditory': auditory, 'schedule': schedule, 'action': 'add'},
     success: function(data) {
       update_simulators();
       if (data.error == true) {
