@@ -105,6 +105,9 @@ function update_busies(date) {
 
         schedule_body.appendChild(busy_row);
       }
+      if (is_admin == 0 && simulator_floating == 1) {
+        document.getElementById("schedule_form_block").removeAttribute('hidden');
+      }
     }
   });
 };
@@ -222,11 +225,11 @@ schedule_form.addEventListener("submit", async function(e) {
   e.preventDefault();
 
   let values = e.srcElement;
-  let ids = {};
+  let ids = [];
 
   for (let i = 0; i < 5; i++) {
     if (values[i].checked) {
-      ids[values[i].name] = 'on';
+      ids.push(values[i].name);
     }
   }
 
@@ -234,7 +237,7 @@ schedule_form.addEventListener("submit", async function(e) {
     url: '/send_busies_list',
     method: 'get',
     dataType: 'json',
-    data: ids,
+    data: {'ids': ids},
     success: function(data) {
       alert(data.response);
     }

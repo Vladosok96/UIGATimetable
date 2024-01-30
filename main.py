@@ -303,17 +303,42 @@ def get_user_approval():
 
     response = {}
     for user in users:
-        user_dictionary = {
-            'id': user.id,
-            'login': user.login,
-            'mail': user.mail,
-            'document_id_hash': user.document_id_hash,
-            'name': user.name,
-            'approved': user.approved
-        }
-        response[user.id] = user_dictionary
+        if user.admin == 0:
+            user_dictionary = {
+                'id': user.id,
+                'login': user.login,
+                'mail': user.mail,
+                'document_id_hash': user.document_id_hash,
+                'name': user.name,
+                'approved': user.approved
+            }
+            response[user.id] = user_dictionary
 
     return response
+
+
+@app.route("/send_user/")
+def send_user():
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return redirect('/', 301)
+
+    name = request.args.get('name')
+    document_id = request.args.get('document_id')
+    mail = request.args.get('mail')
+
+    company_count = Company.query.filter(Company.name == name).count()
+    if company_count > 0:
+        return {'error': True, 'response': 'Компания с таким именем уже зарегистрирована'}
+
+    new_company = Company(name=name, document_id_hash=document_id, login='login', mail=mail, admin=0, approved=1)
+    db.session.add(new_company)
+    db.session.commit()
+
+    return {'error': False, 'response': 'Успешно добавлено'}
 
 
 @app.route("/admin_panel/")
@@ -321,11 +346,11 @@ def admin_panel():
     if session.get('id') == None:
         return redirect('/auth', 301)
 
-    company_name = Company.query.filter(Company.id == session.get('id')).first().name
-
     user = Company.query.filter(Company.id == session.get('id')).first()
     if user.admin == 0:
         return redirect('/', 301)
+
+    company_name = Company.query.filter(Company.id == session.get('id')).first().name
 
     return render_template('admin_panel.html', company_name=company_name)
 
@@ -341,10 +366,12 @@ def register_train(simulator_id):
     company_id = company.id
     company_name = company.name
 
-    simulator_name = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first().name
+    simulator = FlightSimulator.query.filter(FlightSimulator.id == int(simulator_id)).first()
+    simulator_name = simulator.name
+    simulator_floating = simulator.floating
     is_admin = Company.query.filter(Company.id == session.get('id')).first().admin
 
-    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name, is_admin=is_admin, company_id=company_id)
+    return render_template('register_train.html', simulator_id=simulator_id, simulator_name=simulator_name, company_name=company_name, is_admin=is_admin, company_id=company_id, is_floating=simulator_floating)
 
 
 @app.route("/unauthorized_timetable/<simulator_id>")
@@ -365,24 +392,30 @@ def send_busies_list():
     if user.admin > 0:
         return {'error': True, 'response': 'Администратор не может зарегистрировать полет на себя'}
 
-    ids = request.args
-    busies_id = []
-    for checkbox in ids:
-        if ids[checkbox] == 'on':
-            try:
-                busy_id = int(checkbox)
-                busies_id.append(busy_id)
-            except:
-                pass
+    simulator_id = request.args.get('simulator_id')
+    simulator = FlightSimulator.query.filter(FlightSimulator.id == simulator_id).first()
 
-    for busy_id in busies_id:
-        busy = Busy.query.filter(Busy.id == busy_id).first()
+    if simulator.floating == 0:
+        busies_id = request.args.getlist('ids[]')
+        for busy_id in busies_id:
+            busy = Busy.query.filter(Busy.id == busy_id).first()
 
-        if busy.company_id != None:
-            return {'error': True, 'response': 'Выбранные слоты уже заняты'}
+            if busy.company_id != None:
+                return {'error': True, 'response': 'Выбранные слоты уже заняты'}
 
-        busy.company_id = session.get('id')
-        busy.approved = 0
+            busy.company_id = session.get('id')
+            busy.approved = 0
+    else:
+        start_time = request.args.get('start_time')
+        end_time = request.args.get('end_time')
+        day_id = request.args.get('day_id')
+
+        new_busy = Busy(start_time=start_time,
+                        end_time=end_time,
+                        day_id=day_id,
+                        simulator_id=simulator_id,
+                        approved=0)
+        db.session.add(new_busy)
     db.session.commit()
 
     return {'error': False, 'response': 'Запрос отправлен'}
@@ -449,8 +482,9 @@ def day():
 
     day_id = Day.query.filter(Day.date == day_value).first().id
     busies = Busy.query.filter(Busy.day_id == day_id).filter(Busy.simulator_id == simulator_id).all()
+    simulator = FlightSimulator.query.filter(FlightSimulator.id == simulator_id).first()
 
-    if len(busies) == 0:
+    if len(busies) == 0 and simulator.floating == 0:
         slots = [
             (datetime.time(0, 10), datetime.time(4, 10)),
             (datetime.time(7, 30), datetime.time(11, 30)),

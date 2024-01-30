@@ -82,8 +82,8 @@ function update_users() {
     data: {},
     success: function(data) {
       let users_body = document.getElementById('users-body');
-      while (users_body.lastElementChild) {
-        users_body.removeChild(users_body.lastElementChild);
+      while (users_body.firstElementChild.id != 'users-form-row') {
+        users_body.removeChild(users_body.firstElementChild);
       }
 
       for (let i = 0; i < Object.keys(data).length; i++) {
@@ -91,18 +91,15 @@ function update_users() {
         user_row = document.createElement('tr');
         cell_name = document.createElement('td');
         cell_document_id = document.createElement('td');
-        cell_login = document.createElement('td');
         cell_mail = document.createElement('td');
         cell_action = document.createElement('td');
         
         cell_name.textContent = user.name;
         cell_document_id.textContent = user.document_id_hash;
-        cell_login.textContent = user.login;
         cell_mail.textContent = user.mail;
 
         user_row.appendChild(cell_name);
         user_row.appendChild(cell_document_id);
-        user_row.appendChild(cell_login);
         user_row.appendChild(cell_mail);
 
         if (user.approved == 0) {
@@ -143,7 +140,7 @@ function update_users() {
 
         user_row.appendChild(cell_action);
 
-        users_body.appendChild(user_row);
+        users_body.insertBefore(user_row, users_body.lastElementChild);
       }
     }
   });
@@ -221,6 +218,31 @@ function update_simulators() {
 update_users();
 update_schedule();
 update_simulators();
+
+
+var users_form = document.getElementById("users-form");
+
+users_form.addEventListener("submit", async function(e) {
+  e.preventDefault();
+
+  values = e.srcElement;
+  name = values[0].value;
+  document_id = values[1].value;
+  mail = values[2].value;
+
+  $.ajax({
+    url: '/send_user',
+    method: 'get',
+    dataType: 'json',
+    data: {'name': name, 'document_id': document_id, 'mail': mail},
+    success: function(data) {
+      update_users();
+      if (data.error == true) {
+        alert(data.response)
+      }
+    }
+  });
+});
 
 
 var simulators_form = document.getElementById("simulators-form");
