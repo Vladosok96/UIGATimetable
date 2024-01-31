@@ -1,4 +1,6 @@
 import datetime
+import csv
+import os
 
 from flask import Flask, render_template, request, session, redirect
 from flask_sqlalchemy import SQLAlchemy
@@ -8,6 +10,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///timetable.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'bruhbruh'
+app.config['UPLOAD_FOLDER'] = 'static\\uploads'
 
 db = SQLAlchemy(app)
 
@@ -18,6 +21,7 @@ class Company(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     login = db.Column(db.String(100), nullable=False)
     name = db.Column(db.String(100), nullable=False)
+    short_name = db.Column(db.String(100), nullable=False)
     document_id_hash = db.Column(db.String(200), nullable=False)
     mail = db.Column(db.String(100), nullable=False)
     admin = db.Column(db.Integer, nullable=False)
@@ -32,6 +36,8 @@ class Busy(db.Model):
     start_time = db.Column(db.Time, nullable=False)
     end_time = db.Column(db.Time, nullable=False)
     approved = db.Column(db.Integer, nullable=False)
+    customer_name = db.Column(db.String(100))
+    customer_phone = db.Column(db.String(100))
     day_id = db.Column(db.Integer, db.ForeignKey('days.id'))
     company_id = db.Column(db.Integer, db.ForeignKey('companies.id'))
     simulator_id = db.Column(db.Integer, db.ForeignKey('flight_simulators.id'))
@@ -80,7 +86,7 @@ def admin_auth():
         password = request.form.get('password')
 
         if len(Company.query.all()) == 0:
-            new_user = Company(login=login, name='Администратор', document_id_hash=password, mail='', admin=1, approved=1)
+            new_user = Company(login=login, name='Администратор', short_name='', document_id_hash=password, mail='', admin=1, approved=1)
             db.session.add(new_user)
             db.session.commit()
             message = 'Зарегистрирован аккаунт администратора'
@@ -228,6 +234,8 @@ def send_approve():
     else:
         busy.company_id = None
         busy.approved = 1
+        busy.customer_name = None
+        busy.customer_phone = None
 
     db.session.commit()
 
@@ -256,10 +264,12 @@ def get_approval():
 
         busy_dictionary = {
             'id': busy.id,
-            'start_time': busy.start_time.strftime('%H:%M:%S'),
-            'end_time': busy.end_time.strftime('%H:%M:%S'),
+            'start_time': busy.start_time.strftime('%H:%M'),
+            'end_time': busy.end_time.strftime('%H:%M'),
             'day': busy_day.strftime('%d.%m.%Y'),
             'company_name': company_name,
+            'customer_name': busy.customer_name,
+            'customer_phone': busy.customer_phone,
             'simulator_name': simulator_name
         }
         response[busy.id] = busy_dictionary
@@ -310,6 +320,7 @@ def get_user_approval():
                 'mail': user.mail,
                 'document_id_hash': user.document_id_hash,
                 'name': user.name,
+                'short_name': user.short_name,
                 'approved': user.approved
             }
             response[user.id] = user_dictionary
@@ -327,6 +338,7 @@ def send_user():
         return redirect('/', 301)
 
     name = request.args.get('name')
+    short_name = request.args.get('short_name')
     document_id = request.args.get('document_id')
     mail = request.args.get('mail')
 
@@ -334,7 +346,7 @@ def send_user():
     if company_count > 0:
         return {'error': True, 'response': 'Компания с таким именем уже зарегистрирована'}
 
-    new_company = Company(name=name, document_id_hash=document_id, login='login', mail=mail, admin=0, approved=1)
+    new_company = Company(name=name, short_name=short_name, document_id_hash=document_id, login='login', mail=mail, admin=0, approved=1)
     db.session.add(new_company)
     db.session.commit()
 
@@ -383,8 +395,8 @@ def unauthorized_timetable(simulator_id):
     return render_template('unauthorized_timetable.html', simulator_id=simulator_id, simulator_name=simulator_name)
 
 
-@app.route("/send_busies_list/")
-def send_busies_list():
+@app.route("/send_busies/")
+def send_busies():
     if session.get('id') == None:
         return redirect('/auth', 301)
 
@@ -394,6 +406,9 @@ def send_busies_list():
 
     simulator_id = request.args.get('simulator_id')
     simulator = FlightSimulator.query.filter(FlightSimulator.id == simulator_id).first()
+
+    customer_name = request.args.get('name')
+    customer_phone = request.args.get('phone')
 
     if simulator.floating == 0:
         busies_id = request.args.getlist('ids[]')
@@ -405,20 +420,86 @@ def send_busies_list():
 
             busy.company_id = session.get('id')
             busy.approved = 0
+            busy.customer_name = customer_name
+            busy.customer_phone = customer_phone
     else:
-        start_time = request.args.get('start_time')
-        end_time = request.args.get('end_time')
-        day_id = request.args.get('day_id')
+        start_time = request.args.get('time_from')
+        end_time = request.args.get('time_to')
+        day_id = request.args.get('day')
+
+        start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
+        end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
+
+        if start_time >= end_time:
+            return {'error': True, 'response': 'Неправильно введено время'}
+
+        if start_time < datetime.time(9, 0) or start_time > datetime.time(20, 0) or end_time < datetime.time(9, 0) or end_time > datetime.time(20, 0):
+            return {'error': True, 'response': 'Тренажер работает с 9 до 20 часов'}
+
+        last_busy_time = datetime.time(8, 50)
+
+        day_value = datetime.datetime.strptime(day_id, '%d.%m.%Y').date()
+        day_id = Day.query.filter(Day.date == day_value).first().id
 
         new_busy = Busy(start_time=start_time,
                         end_time=end_time,
                         day_id=day_id,
                         simulator_id=simulator_id,
-                        approved=0)
+                        approved=0,
+                        company_id=session.get('id'),
+                        customer_name=customer_name,
+                        customer_phone=customer_phone)
         db.session.add(new_busy)
     db.session.commit()
 
     return {'error': False, 'response': 'Запрос отправлен'}
+
+
+@app.route("/generate_csv/")
+def generate_csv():
+    month_value = int(request.args['month'])
+    year_value = int(request.args['year'])
+    simulator_id = int(request.args['simulator_id'])
+
+    days = Day.query.filter(Day.date.between(f'{year_value}-{month_value:02}-01',
+                                             f'{year_value}-{month_value:02}-31')).all()
+
+    simulator = FlightSimulator.query.filter(FlightSimulator.id == simulator_id).first()
+
+    csv_dir = "static\\csv"
+    try:
+        os.mkdir(csv_dir)
+    except:
+        pass
+    csv_file = f"{simulator.name}_{month_value}_{year_value}.csv"
+    csv_path = os.path.join(csv_dir, csv_file)
+
+    with open(csv_path, 'w', newline='') as file:
+        writer = csv.writer(file, dialect='excel', delimiter=';')
+
+        table_header = [simulator.name]
+        for i in range(len(days)):
+            table_header.append(i)
+        writer.writerow(table_header)
+
+        rows = [
+            ['00.10-04.10'],
+            ['04.30-11.30'],
+            ['11.40-15.40'],
+            ['15.50-19.50'],
+            ['20.00-00.00']
+        ]
+
+        for day in days:
+            busies = Busy.query.filter(Busy.day_id == day.id).filter(Busy.simulator_id == simulator_id).all()
+            for i in range(len(busies)):
+                if busies[i].company != None:
+                    rows[i].append(busies[i].company.short_name)
+                else:
+                    rows[i].append('')
+        writer.writerows(rows)
+
+    return ''
 
 
 @app.route("/delete_busy/")
@@ -436,6 +517,8 @@ def delete_busy():
 
     busy.company_id = None
     busy.approved = 1
+    busy.customer_name = None
+    busy.customer_phone = None
 
     db.session.commit()
 
@@ -519,8 +602,8 @@ def day():
 
         busy_dictionary = {
             'id': busy.id,
-            'start_time': busy.start_time.strftime('%H:%M:%S'),
-            'end_time': busy.end_time.strftime('%H:%M:%S'),
+            'start_time': busy.start_time.strftime('%H:%M'),
+            'end_time': busy.end_time.strftime('%H:%M'),
             'day_id': busy.day_id,
             'company_id': company_id,
             'company_name': company_name,

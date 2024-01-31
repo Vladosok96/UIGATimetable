@@ -39,6 +39,7 @@ function update_busies(date) {
         cell_from = document.createElement("td");
         cell_to = document.createElement("td");
         cell_name = document.createElement("td");
+
         cell_n.textContent = i + 1;
         cell_from.textContent = busy.start_time;
         cell_to.textContent = busy.end_time;
@@ -106,7 +107,11 @@ function update_busies(date) {
         schedule_body.appendChild(busy_row);
       }
       if (is_admin == 0 && simulator_floating == 1) {
-        document.getElementById("schedule_form_block").removeAttribute('hidden');
+        schedule_form_block = document.getElementById('schedule_form_block');
+        schedule_form_block.removeAttribute('hidden');
+
+        schedule_form_floating = document.getElementById('schedule_form_floating');
+        schedule_form_floating.removeAttribute('hidden');
       }
     }
   });
@@ -225,23 +230,37 @@ schedule_form.addEventListener("submit", async function(e) {
   e.preventDefault();
 
   let values = e.srcElement;
-  let ids = [];
 
-  for (let i = 0; i < 5; i++) {
-    if (values[i].checked) {
-      ids.push(values[i].name);
+  if (simulator_floating == 0) {
+    let ids = [];
+
+    for (let i = 0; i < 5; i++) {
+      if (values[i].checked) {
+        ids.push(values[i].name);
+      }
     }
+
+    await $.ajax({
+      url: '/send_busies',
+      method: 'get',
+      dataType: 'json',
+      data: {'simulator_id': simulator_id,'name': values[7].value, 'phone': values[8].value, 'ids': ids},
+      success: function(data) {
+        alert(data.response);
+      }
+    });
   }
-
-  await $.ajax({
-    url: '/send_busies_list',
-    method: 'get',
-    dataType: 'json',
-    data: {'ids': ids},
-    success: function(data) {
-      alert(data.response);
-    }
-  });
+  else {
+    await $.ajax({
+      url: '/send_busies',
+      method: 'get',
+      dataType: 'json',
+      data: {'day': selected_day, 'simulator_id': simulator_id, 'time_from': values[0].value, 'time_to': values[1].value, 'name': values[2].value, 'phone': values[3].value},
+      success: function(data) {
+        alert(data.response);
+      }
+    });
+  }
 
   update_busies(selected_day);
 });

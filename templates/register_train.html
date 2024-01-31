@@ -106,7 +106,18 @@
                 <tbody id="schedule-body"></tbody>
             </table>
             <div id="schedule_form_block" hidden="hidden">
-                <input type="submit" value="Отправить заявку">
+                <p id="schedule_form_floating" hidden="hidden">
+                    <label for="input_from">Начало</label><input id="input_from" type="time" min="09:00" max="20:00">
+                    <label for="input_to">Конец</label><input id="input_to" type="time" min="09:00" max="20:00">
+                </p>
+                <p>
+                    <label>Контактное лицо:</label>
+                    <label for="customer_name">Имя</label><input type="text" id="customer_name">
+                    <label for="customer_phone">Номер</label><input type="text" id="customer_phone"><br>
+                </p>
+                <p>
+                    <input type="submit" value="Отправить заявку">
+                </p>
             </div>
         </form>
     </div>

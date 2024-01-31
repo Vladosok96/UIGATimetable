@@ -14,23 +14,23 @@ function update_schedule() {
         busy = data[Object.keys(data)[i]];
         busy_row = document.createElement('tr');
         cell_day = document.createElement('td');
-        cell_from = document.createElement('td');
-        cell_to = document.createElement('td');
+        cell_slot = document.createElement('td');
         cell_company_name = document.createElement('td');
         cell_simulator_name = document.createElement('td');
+        cell_customer = document.createElement('td');
         cell_action = document.createElement('td');
 
         cell_day.textContent = busy.day;
-        cell_from.textContent = busy.start_time;
-        cell_to.textContent = busy.end_time;
+        cell_slot.textContent = busy.start_time + '-' + busy.end_time;
         cell_company_name.textContent = busy.company_name;
         cell_simulator_name.textContent = busy.simulator_name;
+        cell_customer.textContent = busy.customer_name + ' ' + busy.customer_phone;
 
         busy_row.appendChild(cell_day);
-        busy_row.appendChild(cell_from);
-        busy_row.appendChild(cell_to);
+        busy_row.appendChild(cell_slot);
         busy_row.appendChild(cell_company_name);
         busy_row.appendChild(cell_simulator_name);
+        busy_row.appendChild(cell_customer);
 
         action_approve = document.createElement('button');
         action_decline = document.createElement('button');
@@ -90,15 +90,18 @@ function update_users() {
         user = data[Object.keys(data)[i]];
         user_row = document.createElement('tr');
         cell_name = document.createElement('td');
+        cell_short_name = document.createElement('td');
         cell_document_id = document.createElement('td');
         cell_mail = document.createElement('td');
         cell_action = document.createElement('td');
         
         cell_name.textContent = user.name;
+        cell_short_name.textContent = user.short_name;
         cell_document_id.textContent = user.document_id_hash;
         cell_mail.textContent = user.mail;
 
         user_row.appendChild(cell_name);
+        user_row.appendChild(cell_short_name);
         user_row.appendChild(cell_document_id);
         user_row.appendChild(cell_mail);
 
@@ -227,14 +230,15 @@ users_form.addEventListener("submit", async function(e) {
 
   values = e.srcElement;
   name = values[0].value;
-  document_id = values[1].value;
-  mail = values[2].value;
+  short_name = values[1].value;
+  document_id = values[2].value;
+  mail = values[3].value;
 
   $.ajax({
     url: '/send_user',
     method: 'get',
     dataType: 'json',
-    data: {'name': name, 'document_id': document_id, 'mail': mail},
+    data: {'name': name, 'short_name': short_name, 'document_id': document_id, 'mail': mail},
     success: function(data) {
       update_users();
       if (data.error == true) {
