@@ -2,7 +2,7 @@ import datetime
 import csv
 import os
 
-from flask import Flask, render_template, request, session, redirect
+from flask import Flask, render_template, request, session, redirect, send_file
 from flask_sqlalchemy import SQLAlchemy
 
 
@@ -337,20 +337,30 @@ def send_user():
     if user.admin == 0:
         return redirect('/', 301)
 
-    name = request.args.get('name')
-    short_name = request.args.get('short_name')
-    document_id = request.args.get('document_id')
-    mail = request.args.get('mail')
+    action = request.args.get('action')
 
-    company_count = Company.query.filter(Company.name == name).count()
-    if company_count > 0:
-        return {'error': True, 'response': 'Компания с таким именем уже зарегистрирована'}
+    if action == 'add':
+        name = request.args.get('name')
+        short_name = request.args.get('short_name')
+        document_id = request.args.get('document_id')
+        mail = request.args.get('mail')
 
-    new_company = Company(name=name, short_name=short_name, document_id_hash=document_id, login='login', mail=mail, admin=0, approved=1)
-    db.session.add(new_company)
-    db.session.commit()
+        company_count = Company.query.filter(Company.name == name).count()
+        if company_count > 0:
+            return {'error': True, 'response': 'Компания с таким именем уже зарегистрирована'}
 
-    return {'error': False, 'response': 'Успешно добавлено'}
+        new_company = Company(name=name, short_name=short_name, document_id_hash=document_id, login='login', mail=mail, admin=0, approved=1)
+        db.session.add(new_company)
+        db.session.commit()
+    elif action == 'delete':
+        company_id = request.args.get('user_id')
+
+        company = Company.query.filter(Company.id == company_id).first()
+
+        db.session.delete(company)
+        db.session.commit()
+
+    return {'error': False, 'response': 'Успешно изменено'}
 
 
 @app.route("/admin_panel/")
@@ -499,7 +509,7 @@ def generate_csv():
                     rows[i].append('')
         writer.writerows(rows)
 
-    return ''
+    return send_file(csv_path, as_attachment=True, download_name=csv_path)
 
 
 @app.route("/delete_busy/")

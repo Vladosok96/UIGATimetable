@@ -105,41 +105,27 @@ function update_users() {
         user_row.appendChild(cell_document_id);
         user_row.appendChild(cell_mail);
 
-        if (user.approved == 0) {
-          action_approve = document.createElement('button');
-          action_decline = document.createElement('button');
-  
-          action_approve.textContent = '+';
-          action_approve.user_id = user.id;
-          action_approve.onclick = function(block) {
+        action_delete = document.createElement('button');
+
+        action_delete.textContent = '-';
+        action_delete.user_id = user.id;
+        action_delete.user_name = user.name;
+        action_delete.onclick = function(block) {
+          if (confirm("Вы точно хотите удалить компанию " + block.srcElement.user_name + "?\nЭто действие нельязя будет отменить!")) {
             $.ajax({
-              url: '/send_user_approve',
+              url: '/send_user',
               method: 'get',
               dataType: 'json',
-              data: {'id': block.srcElement.user_id, 'approved': 1},
+              data: {'user_id': block.srcElement.user_id, 'action': 'delete'},
               success: function(data) {
                 update_users();
+                alert(data.response);
               }
             });
           }
-  
-          action_decline.textContent = '-';
-          action_decline.user_id = user.id;
-          action_decline.onclick = function(block) {
-            $.ajax({
-              url: '/send_user_approve',
-              method: 'get',
-              dataType: 'json',
-              data: {'id': block.srcElement.user_id, 'approved': 0},
-              success: function(data) {
-                update_users();
-              }
-            });
-          }
-  
-          cell_action.appendChild(action_approve);
-          cell_action.appendChild(action_decline);
         }
+
+        cell_action.appendChild(action_delete);
 
         user_row.appendChild(cell_action);
 
@@ -238,7 +224,7 @@ users_form.addEventListener("submit", async function(e) {
     url: '/send_user',
     method: 'get',
     dataType: 'json',
-    data: {'name': name, 'short_name': short_name, 'document_id': document_id, 'mail': mail},
+    data: {'name': name, 'short_name': short_name, 'document_id': document_id, 'mail': mail, 'action': 'add'},
     success: function(data) {
       update_users();
       if (data.error == true) {

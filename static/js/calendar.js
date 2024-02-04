@@ -193,15 +193,6 @@ function updateCalendarHeader(year, month) {
   document.getElementById("schedule-block").setAttribute('hidden', 'hidden');
 }
 
-// Инициализация календаря
-function initCalendar() {
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-
-  updateCalendarHeader(year, month);
-  createCalendarCells(year, month);
-}
-
 function prevMonth() {
   currentDate.setMonth(currentDate.getMonth() - 1);
   updateCalendar();
@@ -218,10 +209,16 @@ function updateCalendar() {
 
   updateCalendarHeader(year, month);
   createCalendarCells(year, month);
+
+  if (is_admin) {
+    download_link = document.getElementById('download-csv');
+    download_link.removeAttribute('hidden');
+    download_link.setAttribute('href', '/generate_csv/?month=' + (month + 1) + '&year=' + year + '&simulator_id=' + simulator_id);
+  }
 }
 
 // Вызываем инициализацию календаря
-initCalendar();
+updateCalendar();
 
 // Отправка запроса на запись в расписание
 let schedule_form = document.getElementById("schedule-form");
