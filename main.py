@@ -509,7 +509,7 @@ def generate_csv():
                     rows[i].append('')
         writer.writerows(rows)
 
-    return send_file(csv_path, as_attachment=True, download_name=csv_path)
+    return send_file(csv_path, as_attachment=True, download_name=csv_file)
 
 
 @app.route("/delete_busy/")
