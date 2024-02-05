@@ -252,7 +252,7 @@ schedule_form.addEventListener("submit", async function(e) {
       url: '/send_busies',
       method: 'get',
       dataType: 'json',
-      data: {'day': selected_day, 'simulator_id': simulator_id, 'time_from': values[0].value, 'time_to': values[1].value, 'name': values[2].value, 'phone': values[3].value},
+      data: {'day': selected_day, 'simulator_id': simulator_id, 'time_from': values['input_from'].value, 'time_to': values['input_to'].value, 'name': values['customer_name'].value, 'phone': values['customer_phone'].value},
       success: function(data) {
         alert(data.response);
       }

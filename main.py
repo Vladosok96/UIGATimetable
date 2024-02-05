@@ -435,7 +435,9 @@ def send_busies():
     else:
         start_time = request.args.get('time_from')
         end_time = request.args.get('time_to')
-        day_id = request.args.get('day')
+
+        day_value = datetime.datetime.strptime(request.args.get('day'), '%d.%m.%Y').date()
+        day_id = Day.query.filter(Day.date == day_value).first().id
 
         start_time = datetime.datetime.strptime(start_time, '%H:%M').time()
         end_time = datetime.datetime.strptime(end_time, '%H:%M').time()
@@ -447,9 +449,12 @@ def send_busies():
             return {'error': True, 'response': 'Тренажер работает с 9 до 20 часов'}
 
         last_busy_time = datetime.time(8, 50)
-
-        day_value = datetime.datetime.strptime(day_id, '%d.%m.%Y').date()
-        day_id = Day.query.filter(Day.date == day_value).first().id
+        busies = Busy.query.filter(Busy.day_id == day_id).filter(Busy.simulator_id == simulator_id).all()
+        for busy in busies:
+            last_busy_time = max(busy.end_time, last_busy_time)
+        last_busy_datetime = datetime.datetime.combine(datetime.date.today(), last_busy_time) + datetime.timedelta(minutes=10)
+        if start_time != last_busy_datetime.time():
+            return {'error': True, 'response': 'Начало бронирования должно быть через 10 минут после последнего бронирования'}
 
         new_busy = Busy(start_time=start_time,
                         end_time=end_time,
@@ -525,10 +530,13 @@ def delete_busy():
         print(session.get('id'), busy_id)
         return {'error': True, 'response': 'Вы не можете отменить чужие слоты'}
 
-    busy.company_id = None
-    busy.approved = 1
-    busy.customer_name = None
-    busy.customer_phone = None
+    if busy.flight_simulator.floating == 0:
+        busy.company_id = None
+        busy.approved = 1
+        busy.customer_name = None
+        busy.customer_phone = None
+    else:
+        db.session.delete(busy)
 
     db.session.commit()
 
