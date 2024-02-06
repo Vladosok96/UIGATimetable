@@ -486,7 +486,7 @@ def generate_csv():
         os.mkdir(csv_dir)
     except:
         pass
-    csv_file = f"{simulator.name}_{month_value}_{year_value}.csv"
+    csv_file = f"{simulator.name[:3]}_{month_value}_{year_value}.csv"
     csv_path = os.path.join(csv_dir, csv_file)
 
     with open(csv_path, 'w', newline='') as file:
