@@ -517,6 +517,61 @@ def generate_csv():
     return send_file(csv_path, as_attachment=True, download_name=csv_file)
 
 
+@app.route("/generate_csv_all/")
+def generate_csv_all():
+    csv_month = request.args['csv-month'].split('-')
+    year_value = int(csv_month[0])
+    month_value = int(csv_month[1])
+
+    days = Day.query.filter(Day.date.between(f'{year_value}-{month_value:02}-01',
+                                             f'{year_value}-{month_value:02}-31')).all()
+
+    simulators = FlightSimulator.query.filter(FlightSimulator.floating == 0).all()
+
+    csv_dir = "static\\csv"
+    try:
+        os.mkdir(csv_dir)
+    except:
+        pass
+
+    csv_file = f"{month_value}_{year_value}.csv"
+    csv_path = os.path.join(csv_dir, csv_file)
+
+    with open(csv_path, 'w', newline='') as file:
+        for simulator in simulators:
+            writer = csv.writer(file, dialect='excel', delimiter=';')
+
+            table_header = [simulator.name]
+            for i in range(len(days)):
+                table_header.append(i + 1)
+            writer.writerow(table_header)
+
+            rows = [
+                ['00.10-04.10'],
+                ['04.30-11.30'],
+                ['11.40-15.40'],
+                ['15.50-19.50'],
+                ['20.00-00.00']
+            ]
+
+            for day in days:
+                busies = Busy.query.filter(Busy.day_id == day.id).filter(Busy.simulator_id == simulator.id).all()
+                if len(busies) > 0:
+                    for i in range(len(busies)):
+                        if busies[i].company != None:
+                            rows[i].append(busies[i].company.short_name)
+                        else:
+                            rows[i].append('')
+                else:
+                    for i in range(5):
+                        rows[i].append('')
+            writer.writerows(rows)
+
+            writer.writerow([])
+
+    return send_file(csv_path, as_attachment=True, download_name=csv_file)
+
+
 @app.route("/delete_busy/")
 def delete_busy():
     if session.get('id') == None:
@@ -526,7 +581,9 @@ def delete_busy():
 
     busy = Busy.query.filter(Busy.id == busy_id).first()
 
-    if session.get('id') != busy.company_id:
+    user = Company.query.filter(Company.id == session.get('id')).first()
+
+    if user.admin == 0 and session.get('id') != busy.company_id:
         print(session.get('id'), busy_id)
         return {'error': True, 'response': 'Вы не можете отменить чужие слоты'}
 

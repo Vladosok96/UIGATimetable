@@ -135,6 +135,14 @@
         </table>
     </div>
 </div>
+<h2>Скачать CSV таблицы</h2>
+<div id="csv-block">
+    <form action="/generate_csv_all">
+        <label for="csv-month">Месяц:</label>
+        <input type="month" id="csv-month" name="csv-month" />
+        <input type="submit" value="Скачать">
+    </form>
+</div>
 
 <script src="{{ url_for('static', filename='js/jquery-3.7.1.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/admin_panel.js') }}"></script>

@@ -56,9 +56,7 @@ function update_busies(date) {
 
         cell_input = document.createElement("td");
 
-        if (is_admin > 0) {
-        }
-        else if (busy.company_id == company_id) {
+        if ((is_admin > 0 && busy.company_id != -1) || busy.company_id == company_id) {
           remove_button = document.createElement("button");
           remove_button.textContent = 'Отменить';
           remove_button.addEventListener("click", async function(e) {
