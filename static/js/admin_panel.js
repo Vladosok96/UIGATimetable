@@ -105,7 +105,12 @@ function update_users() {
         user_row.appendChild(cell_document_id);
         user_row.appendChild(cell_mail);
 
+        action_edit = document.createElement('button');
         action_delete = document.createElement('button');
+
+        action_edit.textContent = 'Изм.';
+        action_edit.setAttribute('onclick', "location.href='/edit_company/" + user.id + "'");
+        action_edit.setAttribute('type', 'button');
 
         action_delete.textContent = '-';
         action_delete.user_id = user.id;
@@ -125,6 +130,7 @@ function update_users() {
           }
         }
 
+        cell_action.appendChild(action_edit);
         cell_action.appendChild(action_delete);
 
         user_row.appendChild(cell_action);

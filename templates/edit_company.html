@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Отправка заявки на регистрацию{% endblock %}
+{% block content %}
+<p>
+    <a href="/admin_panel"><- перейти в средство администрирования</a>
+</p>
+<form method="post" action="/edit_company/{{ company_id }}">
+    <p>
+        <label>Название компании</label>
+        <input type="text" name="company_name" value="{{ name }}">
+    </p>
+    <p>
+        <label>Короткое название (для csv таблицы)</label>
+        <input type="text" name="short_company_name" value="{{ short_name }}">
+    </p>
+    <p>
+        <label>Почта</label>
+        <input type="text" name="mail" value="{{ mail }}">
+    </p>
+    <p>
+        <label>Пароль (номер договора)</label>
+        <input type="text" name="password" value="{{ document_id_hash }}">
+    </p>
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+    <p>
+        <input type="submit" value="Сохранить изменения">
+    </p>
+</form>
+{% endblock %}

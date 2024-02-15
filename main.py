@@ -377,6 +377,47 @@ def admin_panel():
     return render_template('admin_panel.html', company_name=company_name)
 
 
+@app.route("/edit_company/<company_id>", methods=['GET', 'POST'])
+def edit_company(company_id):
+    if session.get('id') == None:
+        return redirect('/auth', 301)
+
+    user = Company.query.filter(Company.id == session.get('id')).first()
+    if user.admin == 0:
+        return redirect('/', 301)
+
+    message = None
+
+    if request.method == 'POST':
+        user_company_name = request.form.get('company_name')
+        user_short_company_name = request.form.get('short_company_name')
+        user_mail = request.form.get('mail')
+        user_password = request.form.get('password')
+
+        company = Company.query.filter(Company.id == int(company_id)).first()
+
+        company.name = user_company_name
+        company.short_name = user_short_company_name
+        company.mail = user_mail
+        company.document_id_hash = user_password
+
+        db.session.commit()
+
+        message = 'Успешно изменено'
+
+    company_name = Company.query.filter(Company.id == session.get('id')).first().name
+    company = Company.query.filter(Company.id == int(company_id)).first()
+
+    return render_template('edit_company.html',
+                           company_name=company_name,
+                           message=message,
+                           company_id=company_id,
+                           name=company.name,
+                           short_name=company.short_name,
+                           mail=company.mail,
+                           document_id_hash=company.document_id_hash)
+
+
 @app.route("/register_train/<simulator_id>")
 def register_train(simulator_id):
     db.create_all()
@@ -507,10 +548,15 @@ def generate_csv():
 
         for day in days:
             busies = Busy.query.filter(Busy.day_id == day.id).filter(Busy.simulator_id == simulator_id).all()
-            for i in range(len(busies)):
-                if busies[i].company != None:
-                    rows[i].append(busies[i].company.short_name)
-                else:
+
+            if len(busies) > 0:
+                for i in range(len(busies)):
+                    if busies[i].company != None:
+                        rows[i].append(busies[i].company.short_name)
+                    else:
+                        rows[i].append('')
+            else:
+                for i in range(5):
                     rows[i].append('')
         writer.writerows(rows)
 
