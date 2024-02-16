@@ -583,7 +583,7 @@ def generate_csv_all():
     csv_file = f"{month_value}_{year_value}.csv"
     csv_path = os.path.join(csv_dir, csv_file)
 
-    with open(csv_path, 'w', newline='', encoding='ANSI') as file:
+    with open(csv_path, 'w', newline='', encoding='cp1251') as file:
         for simulator in simulators:
             writer = csv.writer(file, dialect='excel', delimiter=';')
 
